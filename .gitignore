@@ -1,0 +1,19 @@
+node_modules/
+dist/
+build/
+.env
+.env.bak
+*.log
+.DS_Store
+~$*
+backend/tmp-cerfa-test/
+# Modèles Tesseract (téléchargés à la volée)
+*.traineddata
+# Anciens templates / backups locaux
+backend/public/cerfa/_backup_old/
+# Les PDF CERFA officiels sont nécessaires en production
+# backend/public/cerfa/*.pdf
+
+
+
+

@@ -1,0 +1,42 @@
+{
+  "societe": {
+    "raisonSociale": "AUTO OCCASION SARL",
+    "siret": "12345678901234",
+    "adresse": "123 Rue de l'Automobile",
+    "codePostal": "75001",
+    "ville": "Paris",
+    "telephone": "01 23 45 67 89",
+    "email": "contact@auto-occasion.fr"
+  },
+  "client": {
+    "nom": "DUPONT",
+    "prenom": "Jean",
+    "adresse": "456 Avenue de la République",
+    "codePostal": "69001",
+    "ville": "Lyon",
+    "telephone": "06 12 34 56 78",
+    "email": "jean.dupont@email.fr"
+  },
+  "vehicule": {
+    "marque": "PEUGEOT",
+    "modele": "308",
+    "immatriculation": "AB-123-CD",
+    "vin": "VF3XXXXXXXXXXXXXXX",
+    "datePremiereImmat": "2018-03-15",
+    "kilometrage": "85000",
+    "couleur": "Blanc"
+  },
+  "vente": {
+    "dateVente": "2024-01-15",
+    "prixTTC": "12500.00",
+    "modePaiement": "Virement bancaire",
+    "numeroFacture": "FAC-202401-1234"
+  },
+  "options": {
+    "generateMandat": true
+  }
+}
+
+
+
+
