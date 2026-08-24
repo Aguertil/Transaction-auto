@@ -1,5 +1,6 @@
 # Blueprint Render : https://render.com/docs/blueprint-spec
-# Après le premier déploiement, renseignez FRONTEND_URL et VITE_API_URL avec les URLs Render affichées.
+# Seul MONGODB_URI est obligatoire au premier déploiement.
+# Google / Stripe : à remplir plus tard dans le dashboard Render.
 
 services:
   - type: web
@@ -21,7 +22,10 @@ services:
       - key: SESSION_SECRET
         generateValue: true
       - key: FRONTEND_URL
-        sync: false
+        fromService:
+          type: web
+          name: auto-documents-web
+          envVarKey: RENDER_EXTERNAL_URL
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: GOOGLE_CLIENT_SECRET
@@ -45,7 +49,10 @@ services:
     staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
-        sync: false
+        fromService:
+          type: web
+          name: auto-documents-api
+          envVarKey: RENDER_EXTERNAL_URL
     routes:
       - type: rewrite
         source: /*
