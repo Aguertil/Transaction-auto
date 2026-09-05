@@ -26,32 +26,38 @@ function setupGoogleOAuth() {
       callbackURL: process.env.GOOGLE_CALLBACK_URL || '/api/auth/google/callback'
     }, async (accessToken, refreshToken, profile, done) => {
       try {
+        const email = profile.emails?.[0]?.value;
+        if (!email) {
+          return done(new Error('Email Google non fourni. Autorisez l’accès à l’email.'), null);
+        }
+
         let user = await User.findOne({ googleId: profile.id });
         if (user) {
           user.lastLogin = new Date();
           await user.save();
           return done(null, user);
         }
-        user = await User.findOne({ email: profile.emails[0].value });
+        user = await User.findOne({ email });
         if (user) {
           user.googleId = profile.id;
-          user.googleEmail = profile.emails[0].value;
+          user.googleEmail = email;
           user.lastLogin = new Date();
           await user.save();
           return done(null, user);
         }
         user = new User({
-          email: profile.emails[0].value,
+          email,
           googleId: profile.id,
-          googleEmail: profile.emails[0].value,
-          nom: profile.name.familyName,
-          prenom: profile.name.givenName,
+          googleEmail: email,
+          nom: profile.name?.familyName || '',
+          prenom: profile.name?.givenName || '',
           role: 'gratuit',
           lastLogin: new Date()
         });
         await user.save();
         return done(null, user);
       } catch (error) {
+        console.error('Erreur stratégie Google:', error);
         return done(error, null);
       }
     }));
@@ -278,6 +284,19 @@ router.get('/google', async (req, res, next) => {
  * GET /api/auth/google/callback
  */
 router.get('/google/callback', async (req, res, next) => {
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5174';
+  const redirectAuthError = (message) => {
+    const msg = encodeURIComponent(message || 'Connexion Google échouée');
+    return res.redirect(`${frontendUrl}/auth/error?message=${msg}`);
+  };
+
+  // Erreur renvoyée directement par Google (refus, redirect_uri, etc.)
+  if (req.query.error) {
+    const detail = [req.query.error, req.query.error_description].filter(Boolean).join(': ');
+    console.error('Google OAuth query error:', detail);
+    return redirectAuthError(detail);
+  }
+
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
     return res.status(503).json({ error: 'Google OAuth non configuré' });
   }
@@ -285,19 +304,17 @@ router.get('/google/callback', async (req, res, next) => {
   if (!configured) {
     return res.status(503).json({ error: 'Google OAuth non disponible' });
   }
-  passport.authenticate('google', { session: false }, async (err, user) => {
+  passport.authenticate('google', { session: false }, async (err, user, info) => {
     if (err || !user) {
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5174';
-      return res.redirect(`${frontendUrl}/auth/error`);
+      console.error('Google OAuth callback failed:', err?.message || info || 'no user');
+      return redirectAuthError(err?.message || info?.message || 'Connexion Google échouée');
     }
     try {
       const token = generateToken(user._id);
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5174';
       res.redirect(`${frontendUrl}/auth/callback?token=${token}`);
     } catch (error) {
       console.error('Erreur callback Google:', error);
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5174';
-      res.redirect(`${frontendUrl}/auth/error`);
+      return redirectAuthError(error.message || 'Erreur création session');
     }
   })(req, res, next);
 });

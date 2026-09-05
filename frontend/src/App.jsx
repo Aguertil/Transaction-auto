@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard';
 import Admin from './pages/Admin';
 import GenerateDocuments from './pages/GenerateDocuments';
 import AuthCallback from './pages/AuthCallback';
+import AuthError from './pages/AuthError';
 import './index.css';
 
 function AppRoutes() {
@@ -35,6 +36,7 @@ function AppRoutes() {
       <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
       <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <Register />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
+      <Route path="/auth/error" element={<AuthError />} />
       <Route 
         path="/dashboard" 
         element={
