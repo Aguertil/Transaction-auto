@@ -1,5 +1,6 @@
 # Blueprint Render : https://render.com/docs/blueprint-spec
 # Seul MONGODB_URI est obligatoire au premier déploiement.
+# ADMIN_EMAIL + ADMIN_PASSWORD : créent / mettent à jour le compte admin au démarrage.
 # Google / Stripe : à remplir plus tard dans le dashboard Render.
 
 services:
@@ -37,6 +38,10 @@ services:
       - key: STRIPE_PRICE_ID
         sync: false
       - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
         sync: false
 
   - type: web

@@ -17,6 +17,7 @@ import { handleStripeWebhook } from './services/stripeBilling.js';
 
 // Import de la base de données
 import { connectDatabase } from './config/database.js';
+import { ensureAdminFromEnv } from './scripts/ensureAdmin.js';
 // Import Passport (sans Google OAuth au chargement)
 import './config/passport.js';
 
@@ -62,8 +63,10 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Connexion à la base de données
-connectDatabase().catch(console.error);
+// Connexion à la base de données + bootstrap admin (ADMIN_EMAIL / ADMIN_PASSWORD)
+connectDatabase()
+  .then(() => ensureAdminFromEnv())
+  .catch(console.error);
 
 // Routes publiques
 app.get('/api/health', (req, res) => {

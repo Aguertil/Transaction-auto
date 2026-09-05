@@ -1,21 +1,49 @@
 import express from 'express';
 import User from '../models/User.js';
 import Document from '../models/Document.js';
-import { requireAdmin } from '../middleware/auth.js';
+import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Toutes les routes admin nécessitent l'authentification admin
-router.use(requireAdmin);
+// Auth JWT puis rôle admin
+router.use(authenticateToken, requireAdmin);
+
+function permissionSummary(user) {
+  const isAdmin = user.role === 'admin';
+  const isActive = user.isActive !== false;
+  return {
+    canLogin: isActive,
+    canGenerateAllDocuments: isActive, // paiement mis de côté : tout compte actif
+    canAccessAdmin: isAdmin && isActive,
+    authMethod: user.googleId ? (user.password ? 'google+password' : 'google') : 'password',
+    roleLabel:
+      user.role === 'admin' ? 'Administrateur' :
+      user.role === 'premium' ? 'Premium (héritage)' :
+      'Utilisateur'
+  };
+}
 
 /**
- * Liste tous les utilisateurs
+ * Liste tous les utilisateurs + compteurs documents + autorisations
  * GET /api/admin/users
  */
 router.get('/users', async (req, res) => {
   try {
-    const users = await User.find({}).select('-password');
-    res.json({ users });
+    const users = await User.find({}).select('-password').sort({ createdAt: -1 }).lean();
+    const counts = await Document.aggregate([
+      { $group: { _id: '$userId', count: { $sum: 1 } } }
+    ]);
+    const countByUser = Object.fromEntries(
+      counts.map((c) => [String(c._id), c.count])
+    );
+
+    const enriched = users.map((u) => ({
+      ...u,
+      documentsCount: countByUser[String(u._id)] || 0,
+      permissions: permissionSummary(u)
+    }));
+
+    res.json({ users: enriched, total: enriched.length });
   } catch (error) {
     console.error('Erreur récupération utilisateurs:', error);
     res.status(500).json({ error: 'Erreur lors de la récupération des utilisateurs' });
