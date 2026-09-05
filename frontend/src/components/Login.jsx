@@ -36,7 +36,7 @@ export default function Login() {
     <div className="auth-container">
       <div className="auth-card">
         <h2>Connexion</h2>
-        <p className="auth-subtitle">Accédez à votre compte premium</p>
+        <p className="auth-subtitle">Accédez à votre compte</p>
 
         {error && <div className="error-message">{error}</div>}
 

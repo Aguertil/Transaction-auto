@@ -1,42 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Dashboard.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export default function Dashboard() {
-  const { user, logout, hasPremiumAccess, isAdmin, fetchUser } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
   const [availableDocs, setAvailableDocs] = useState({ free: [], premium: [] });
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [billingLoading, setBillingLoading] = useState(false);
-  const [billingMessage, setBillingMessage] = useState(null);
-
-  useEffect(() => {
-    const checkout = searchParams.get('checkout');
-    if (checkout !== 'success' && checkout !== 'cancel') return;
-    let cancelled = false;
-    (async () => {
-      if (checkout === 'success') {
-        setBillingMessage('Paiement confirmé. Mise à jour de votre compte…');
-        await fetchUser();
-        if (!cancelled) setBillingMessage('Merci ! Votre compte Premium est actif.');
-      } else if (checkout === 'cancel') {
-        setBillingMessage('Paiement annulé.');
-      }
-      if (cancelled) return;
-      const next = new URLSearchParams(searchParams);
-      next.delete('checkout');
-      setSearchParams(next, { replace: true });
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [searchParams, setSearchParams, fetchUser]);
 
   useEffect(() => {
     fetchAvailableDocs();
@@ -72,51 +47,11 @@ export default function Dashboard() {
     navigate('/');
   };
 
-  const startCheckout = async () => {
-    setBillingMessage(null);
-    setBillingLoading(true);
-    try {
-      const { data } = await axios.post(`${API_URL}/api/billing/create-checkout-session`);
-      if (data?.url) {
-        window.location.href = data.url;
-        return;
-      }
-      setBillingMessage('Réponse Stripe inattendue.');
-    } catch (e) {
-      const msg =
-        e.response?.data?.message ||
-        e.response?.data?.error ||
-        'Impossible de démarrer le paiement.';
-      setBillingMessage(msg);
-    } finally {
-      setBillingLoading(false);
-    }
-  };
-
-  const openBillingPortal = async () => {
-    setBillingMessage(null);
-    setBillingLoading(true);
-    try {
-      const { data } = await axios.post(`${API_URL}/api/billing/create-portal-session`);
-      if (data?.url) {
-        window.location.href = data.url;
-        return;
-      }
-      setBillingMessage('Réponse Stripe inattendue.');
-    } catch (e) {
-      const msg =
-        e.response?.data?.message ||
-        e.response?.data?.error ||
-        'Impossible d’ouvrir le portail de facturation.';
-      setBillingMessage(msg);
-    } finally {
-      setBillingLoading(false);
-    }
-  };
-
   if (loading) {
     return <div className="loading">Chargement...</div>;
   }
+
+  const allDocs = [...(availableDocs.free || []), ...(availableDocs.premium || [])];
 
   return (
     <div className="dashboard-container">
@@ -132,18 +67,6 @@ export default function Dashboard() {
       </header>
 
       <main className="dashboard-main">
-        {billingMessage && (
-          <div className="billing-toast" style={{
-            margin: '0 1rem 1rem',
-            padding: '12px 16px',
-            borderRadius: 8,
-            background: '#eef6ff',
-            border: '1px solid #c5d9f5',
-            color: '#1a3a5c'
-          }}>
-            {billingMessage}
-          </div>
-        )}
         <div className="user-info-card">
           <div className="user-avatar">
             {user?.prenom?.[0] || user?.email?.[0] || 'U'}
@@ -152,70 +75,26 @@ export default function Dashboard() {
             <h2>{user?.prenom} {user?.nom}</h2>
             <p>{user?.email}</p>
             <div className="user-badge">
-              {user?.role === 'admin' && <span className="badge-admin">👑 Admin</span>}
-              {user?.role === 'premium' && <span className="badge-premium">💎 Premium</span>}
-              {user?.role === 'gratuit' && <span className="badge-free">🆓 Gratuit</span>}
+              {user?.role === 'admin' && <span className="badge-admin">Admin</span>}
+              {user?.role !== 'admin' && <span className="badge-free">Compte actif</span>}
             </div>
           </div>
         </div>
 
-        {!hasPremiumAccess() && user?.role !== 'admin' && (
-          <div className="upgrade-banner">
-            <h3>💎 Passez Premium</h3>
-            <p>Accédez à tous les documents CERFA, factures, garanties et plus encore</p>
-            <p className="upgrade-features">
-              ✓ Tous les documents CERFA<br/>
-              ✓ Factures et garanties<br/>
-              ✓ Historique illimité<br/>
-              ✓ Support prioritaire
-            </p>
-            <button
-              type="button"
-              className="btn-upgrade"
-              onClick={startCheckout}
-              disabled={billingLoading}
-            >
-              {billingLoading ? 'Redirection…' : 'Passer Premium (paiement sécurisé)'}
-            </button>
-          </div>
-        )}
-
-        {hasPremiumAccess() && user?.role !== 'admin' && user?.stripeCustomerId && (
-          <div className="upgrade-banner" style={{ borderColor: '#c8e6c9', background: '#f1faf1' }}>
-            <h3>Abonnement</h3>
-            <p>Modifier votre carte, consulter les factures ou gérer l’annulation.</p>
-            <button
-              type="button"
-              className="btn-upgrade"
-              onClick={openBillingPortal}
-              disabled={billingLoading}
-            >
-              {billingLoading ? 'Ouverture…' : 'Gérer mon abonnement'}
-            </button>
-          </div>
-        )}
+        {/* (Paiement / abonnement Stripe : mis de côté pour l’instant) */}
 
         <div className="dashboard-grid">
           <div className="dashboard-card">
             <h3>Documents disponibles</h3>
+            <p style={{ marginBottom: '1rem', color: '#555', fontSize: '0.95rem' }}>
+              Avec votre compte, vous pouvez générer tous les documents.
+            </p>
             <div className="documents-list">
               <div className="doc-section">
-                <h4>Gratuits</h4>
-                {availableDocs.free?.map(doc => (
+                {allDocs.map(doc => (
                   <div key={doc.type} className="doc-item">
                     <span className="doc-name">{doc.label}</span>
-                    <span className="doc-status available">✓ Disponible</span>
-                  </div>
-                ))}
-              </div>
-              <div className="doc-section">
-                <h4>Premium {!hasPremiumAccess() && <span className="lock-icon">🔒</span>}</h4>
-                {availableDocs.premium?.map(doc => (
-                  <div key={doc.type} className="doc-item">
-                    <span className="doc-name">{doc.label}</span>
-                    <span className={`doc-status ${doc.available ? 'available' : 'locked'}`}>
-                      {doc.available ? '✓ Disponible' : '🔒 Premium requis'}
-                    </span>
+                    <span className="doc-status available">Disponible</span>
                   </div>
                 ))}
               </div>
@@ -249,4 +128,3 @@ export default function Dashboard() {
     </div>
   );
 }
-

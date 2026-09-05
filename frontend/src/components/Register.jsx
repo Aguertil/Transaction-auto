@@ -64,7 +64,7 @@ export default function Register() {
     <div className="auth-container">
       <div className="auth-card">
         <h2>Inscription</h2>
-        <p className="auth-subtitle">Créez votre compte gratuit</p>
+        <p className="auth-subtitle">Créez votre compte — tous les documents inclus</p>
 
         {error && <div className="error-message">{error}</div>}
 

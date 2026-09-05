@@ -80,16 +80,9 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Méthode pour vérifier si l'utilisateur a accès premium
+// Accès documents : tout compte connecté (paiement entre parenthèses pour l’instant)
 userSchema.methods.hasPremiumAccess = function() {
-  if (this.role === 'admin') return true;
-  if (this.role === 'premium') {
-    if (this.subscriptionExpiresAt) {
-      return this.subscriptionExpiresAt > new Date();
-    }
-    return true; // Premium sans expiration
-  }
-  return false;
+  return true;
 };
 
 // Méthode pour obtenir les infos publiques (sans mot de passe)

@@ -12,7 +12,7 @@ function todayLocalISO() {
 }
 
 export default function GenerateDocuments() {
-  const { user, hasPremiumAccess } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [availableDocs, setAvailableDocs] = useState({ free: [], premium: [] });
   const [formData, setFormData] = useState({
@@ -149,13 +149,11 @@ export default function GenerateDocuments() {
       const response = await axios.get(`${API_URL}/api/documents/available`, { headers });
       setAvailableDocs(response.data);
       
-      // Sélectionner les documents par défaut selon l'accès
-      const defaultDocs = hasPremiumAccess()
-        ? [...response.data.free, ...response.data.premium]
-            .filter(doc => doc.available)
-            .map(doc => doc.type)
-        : response.data.free.map(doc => doc.type);
-      
+      // Tout compte connecté : tous les documents disponibles
+      const defaultDocs = [...response.data.free, ...response.data.premium]
+        .filter(doc => doc.available)
+        .map(doc => doc.type);
+
       setFormData(prev => ({
         ...prev,
         options: { ...prev.options, selectedDocuments: defaultDocs }
@@ -253,7 +251,8 @@ export default function GenerateDocuments() {
     setError(null);
 
     try {
-      const endpoint = hasPremiumAccess()
+      // Compte connecté → génération complète ; sinon CERFA public uniquement
+      const endpoint = user
         ? `${API_URL}/api/documents/generate`
         : `${API_URL}/api/documents/public/generate`;
 

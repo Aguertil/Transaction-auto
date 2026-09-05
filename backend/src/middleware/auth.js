@@ -63,28 +63,14 @@ export const authenticateToken = async (req, res, next) => {
 };
 
 /**
- * Middleware pour vérifier l'accès premium
- * Les admins ont automatiquement accès premium
+ * Middleware premium (paiement mis de côté).
+ * Tout utilisateur authentifié a actuellement accès aux documents.
  */
 export const requirePremium = (req, res, next) => {
   if (!req.user) {
     return res.status(401).json({ error: 'Authentification requise' });
   }
-
-  // Les admins ont tous les droits, y compris premium
-  const userRole = req.user.role || (req.user._id === 'dev-admin-id' ? 'admin' : null);
-  if (userRole === 'admin') {
-    return next();
-  }
-
-  if (!req.user.hasPremiumAccess || !req.user.hasPremiumAccess()) {
-    return res.status(403).json({ 
-      error: 'Accès premium requis',
-      message: 'Vous devez avoir un compte premium pour accéder à cette fonctionnalité'
-    });
-  }
-
-  next();
+  return next();
 };
 
 /**

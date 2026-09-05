@@ -12,7 +12,7 @@ function todayLocalISO() {
 }
 
 export default function Home() {
-  const { user, hasPremiumAccess } = useAuth();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     societe: {
       raisonSociale: '',
@@ -141,7 +141,7 @@ export default function Home() {
           <div className="header-actions">
             {user ? (
               <Link to="/dashboard" className="btn-header">
-                {hasPremiumAccess() ? 'Dashboard Premium' : 'Mon Compte'}
+                Mon Compte
               </Link>
             ) : (
               <>
@@ -164,9 +164,16 @@ export default function Home() {
               </p>
               {!user && (
                 <div className="premium-banner">
-                  <strong>💎 Passez Premium</strong>
+                  <strong>Créez un compte gratuit</strong>
                   <p>Accédez à tous les documents CERFA, factures, garanties et plus encore</p>
-                  <Link to="/register" className="btn-premium">Découvrir Premium</Link>
+                  <Link to="/register" className="btn-premium">Créer un compte</Link>
+                </div>
+              )}
+              {user && (
+                <div className="premium-banner">
+                  <strong>Tous les documents sont débloqués</strong>
+                  <p>Générez l’ensemble des papiers depuis votre espace.</p>
+                  <Link to="/generate" className="btn-premium">Générer des documents</Link>
                 </div>
               )}
             </div>

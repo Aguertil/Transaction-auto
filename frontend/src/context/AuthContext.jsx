@@ -81,17 +81,8 @@ export function AuthProvider({ children }) {
     delete axios.defaults.headers.common['Authorization'];
   };
 
-  const hasPremiumAccess = () => {
-    if (!user) return false;
-    if (user.role === 'admin') return true;
-    if (user.role === 'premium') {
-      if (user.subscriptionExpiresAt) {
-        return new Date(user.subscriptionExpiresAt) > new Date();
-      }
-      return true;
-    }
-    return false;
-  };
+  // Tout compte connecté a accès à tous les documents (paiement mis de côté)
+  const hasPremiumAccess = () => !!user;
 
   const isAdmin = () => {
     return user?.role === 'admin';
