@@ -17,10 +17,10 @@ export default function AuthCallback() {
       localStorage.setItem('token', token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       fetchUser().then(() => {
-        navigate('/dashboard');
+        navigate('/dashboard', { replace: true });
       });
     } else {
-      navigate('/login');
+      navigate('/login', { replace: true });
     }
   }, [searchParams, navigate, fetchUser]);
 
