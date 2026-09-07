@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
+import { BRAND_NAME } from '../brand';
 import './Auth.css';
 
 export default function Login() {
@@ -36,7 +37,7 @@ export default function Login() {
     <div className="auth-container">
       <div className="auth-card">
         <h2>Connexion</h2>
-        <p className="auth-subtitle">Accédez à votre compte</p>
+        <p className="auth-subtitle">Accédez à votre compte {BRAND_NAME}</p>
 
         {error && <div className="error-message">{error}</div>}
 

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
+import { BRAND_NAME } from '../brand';
 import './Auth.css';
 
 export default function Register() {
@@ -64,7 +65,7 @@ export default function Register() {
     <div className="auth-container">
       <div className="auth-card">
         <h2>Inscription</h2>
-        <p className="auth-subtitle">Créez votre compte — tous les documents inclus</p>
+        <p className="auth-subtitle">Créez votre compte {BRAND_NAME} — tous les documents inclus</p>
 
         {error && <div className="error-message">{error}</div>}
 

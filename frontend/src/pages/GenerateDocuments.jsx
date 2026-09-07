@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { BRAND_NAME } from '../brand';
 import './GenerateDocuments.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -281,7 +282,7 @@ export default function GenerateDocuments() {
   return (
     <div className="generate-container">
       <header className="generate-header">
-        <h1>Génération de documents</h1>
+        <h1>Génération de documents — {BRAND_NAME}</h1>
         <button onClick={() => navigate('/dashboard')} className="btn-back">
           ← Retour
         </button>

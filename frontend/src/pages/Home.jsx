@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
+import { BRAND_NAME, BRAND_TAGLINE } from '../brand';
 import './Home.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -136,8 +137,8 @@ export default function Home() {
     <div className="home-container">
       <header className="home-header">
         <div className="header-content">
-          <h1>📄 Auto Documents Generator</h1>
-          <p>Générez vos documents automobiles en quelques clics</p>
+          <h1>{BRAND_NAME}</h1>
+          <p>{BRAND_TAGLINE}</p>
           <div className="header-actions">
             {user ? (
               <Link to="/dashboard" className="btn-header">

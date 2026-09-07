@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { BRAND_NAME } from '../brand';
 import './Admin.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -123,7 +124,7 @@ export default function Admin() {
       <header className="admin-header">
         <div className="header-inner">
           <div>
-            <h1>Administration</h1>
+            <h1>Administration {BRAND_NAME}</h1>
             <p className="admin-header-sub">Base des inscrits et autorisations</p>
           </div>
           <div className="header-actions">

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { BRAND_NAME } from '../brand';
 import './Dashboard.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -57,7 +58,7 @@ export default function Dashboard() {
     <div className="dashboard-container">
       <header className="dashboard-header">
         <div className="header-inner">
-          <h1>Mon Dashboard</h1>
+          <h1>{BRAND_NAME}</h1>
           <div className="header-actions">
             <Link to="/" className="btn-link">Accueil</Link>
             {isAdmin() && <Link to="/admin" className="btn-link">Administration</Link>}
