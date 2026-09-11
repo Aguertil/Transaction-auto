@@ -1,10 +1,10 @@
 .generate-container {
   min-height: 100vh;
-  background: #f5f7fa;
+  background: var(--paper);
 }
 
 .generate-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--ink);
   color: white;
   padding: 20px;
   display: flex;
@@ -14,7 +14,10 @@
 
 .generate-header h1 {
   margin: 0;
-  font-size: 28px;
+  font-size: 1.4rem;
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
 .btn-back {
@@ -64,8 +67,8 @@
 }
 
 .doc-checkbox:hover:not(.disabled) {
-  border-color: #667eea;
-  background: #f5f7fa;
+  border-color: var(--accent);
+  background: var(--paper);
 }
 
 .doc-checkbox input[type="checkbox"] {
@@ -97,8 +100,8 @@
 .btn-generate {
   width: 100%;
   padding: 16px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--accent);
+  color: var(--ink);
   border: none;
   border-radius: 8px;
   font-size: 16px;
@@ -110,6 +113,7 @@
 
 .btn-generate:hover:not(:disabled) {
   transform: translateY(-2px);
+  background: #12c4af;
 }
 
 .btn-generate:disabled {
@@ -129,7 +133,7 @@
 
 .form-section h3 {
   margin: 0 0 20px 0;
-  color: #667eea;
+  color: var(--accent);
   font-size: 18px;
   font-weight: 600;
 }
@@ -153,7 +157,7 @@
 .form-grid input:focus,
 .form-grid select:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--accent);
 }
 
 .form-grid .span-2 {
@@ -214,7 +218,7 @@
 }
 
 .ocr-upload-card:hover {
-  border-color: #667eea;
+  border-color: var(--accent);
   background: #fafbff;
 }
 
@@ -235,14 +239,14 @@
 
 .ocr-file-name {
   font-size: 12px;
-  color: #667eea;
+  color: var(--accent);
   margin-top: 6px;
   word-break: break-all;
 }
 
 .btn-ocr {
   padding: 12px 24px;
-  background: #667eea;
+  background: var(--accent);
   color: white;
   border: none;
   border-radius: 8px;
@@ -253,7 +257,7 @@
 }
 
 .btn-ocr:hover:not(:disabled) {
-  background: #5568d3;
+  background: #12c4af;
 }
 
 .btn-ocr:disabled {
@@ -298,7 +302,7 @@
 .ocr-preview-item pre {
   margin: 6px 0 0 0;
   padding: 10px;
-  background: #f5f7fa;
+  background: var(--paper);
   border-radius: 6px;
   white-space: pre-wrap;
   word-break: break-word;
@@ -334,7 +338,7 @@
 }
 
 .btn-geo:hover:not(:disabled) {
-  border-color: #667eea;
+  border-color: var(--accent);
   background: #eef0ff;
 }
 
