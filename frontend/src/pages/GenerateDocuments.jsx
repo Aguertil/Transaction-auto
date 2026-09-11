@@ -291,6 +291,7 @@ export default function GenerateDocuments() {
     setError(null);
 
     try {
+      localStorage.setItem('societeData', JSON.stringify(formData.societe));
       // Compte connecté → génération complète ; sinon CERFA public uniquement
       const endpoint = user
         ? `${API_URL}/api/documents/generate`
