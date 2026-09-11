@@ -77,8 +77,15 @@ export default function Dashboard() {
             <p>{user?.email}</p>
             <div className="user-badge">
               {user?.role === 'admin' && <span className="badge-admin">Admin</span>}
-              {user?.role !== 'admin' && <span className="badge-free">Compte actif</span>}
+              {user?.accountType === 'pro' ? (
+                <span className="badge-pro">Professionnel</span>
+              ) : (
+                <span className="badge-free">Particulier</span>
+              )}
             </div>
+            {user?.accountType === 'pro' && user?.societe?.raisonSociale && (
+              <p className="user-company">{user.societe.raisonSociale}</p>
+            )}
           </div>
         </div>
 

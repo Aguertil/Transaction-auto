@@ -40,6 +40,25 @@
   animation: ac-rise 0.65s ease both;
 }
 
+.auth-card-wide {
+  max-width: 480px;
+}
+
+.pro-fields {
+  margin-bottom: 0.5rem;
+  padding: 0.85rem;
+  background: var(--paper);
+  border-radius: 8px;
+  border: 1px solid var(--line);
+}
+
+.auth-hint {
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-align: center;
+}
+
 .auth-card h2 {
   margin: 0 0 0.35rem;
   color: var(--ink);

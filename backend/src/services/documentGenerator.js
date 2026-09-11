@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import PDFKitDoc from 'pdfkit';
 import archiver from 'archiver';
 import { Readable } from 'stream';
+import { partyDisplayName, partySiret, isParticulier, isPro } from '../utils/party.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -328,19 +329,20 @@ function fillCerfaCessionPage(form, pageIndex, data) {
   );
   fillPdfText(form, `${p}.num_KilométrageCompteur[0]`, vehicule.kilometrage);
 
-  fillPdfText(form, `${p}.txt_IdentitéVendeur[0]`, societe.raisonSociale);
-  fillPdfText(form, `${p}.Num_Siret[0]`, societe.siret, 14);
+  fillPdfText(form, `${p}.txt_IdentitéVendeur[0]`, partyDisplayName(societe));
+  fillPdfText(form, `${p}.Num_Siret[0]`, partySiret(societe), 14);
   fillPdfText(form, `${p}.txt_NomVoie[0]`, societe.adresse);
   fillPdfText(form, `${p}.txt_CommuneAdresse[0]`, societe.ville);
   fillPdfText(form, `${p}.num_CodePostalAdresse[0]`, societe.codePostal, 5);
 
-  const nomCompletAcheteur = `${client.prenom || ''} ${client.nom || ''}`.trim();
-  fillPdfText(form, `${p}.txt_IdentitéAcheteur[0]`, nomCompletAcheteur);
+  fillPdfText(form, `${p}.txt_IdentitéAcheteur[0]`, partyDisplayName(client));
   fillPdfText(form, `${p}.txt_NomVoieAdresseAcheteur[0]`, client.adresse);
   fillPdfText(form, `${p}.txt_CommuneAdresseAcheteur[0]`, client.ville);
   fillPdfText(form, `${p}.num_CodePostalAdresseAcheteur[0]`, client.codePostal, 5);
-  fillPdfText(form, `${p}.txt_LieuNaissanceAcheteur[0]`, client.lieuNaissance);
-  fillPdfBirthParts(form, p, client.dateNaissance);
+  if (isParticulier(client)) {
+    fillPdfText(form, `${p}.txt_LieuNaissanceAcheteur[0]`, client.lieuNaissance);
+    fillPdfBirthParts(form, p, client.dateNaissance);
+  }
 
   if (vente.dateVente) {
     fillPdfDateParts(form, p, 'num_DateVente', vente.dateVente);
@@ -432,8 +434,8 @@ async function generateCerfaMandat(data) {
     const vehicule = data.vehicule || {};
     const vente = data.vente || {};
 
-    const identiteMandant = `${client.prenom || ''} ${client.nom || ''}`.trim();
-    const identiteMandataire = societe.raisonSociale || '';
+    const identiteMandant = partyDisplayName(client);
+    const identiteMandataire = partyDisplayName(societe);
     const marqueModele = `${vehicule.marque || ''} ${vehicule.modele || ''}`.trim();
     const natureOperation =
       vente.natureOperation ||
@@ -442,15 +444,15 @@ async function generateCerfaMandat(data) {
 
     // Mandant (acheteur)
     fillPdfText(form, `${p}.txt_IdentitéMandant[0]`, identiteMandant);
-    fillPdfText(form, `${p}.num_SIRETMandant[0]`, client.siret, 14);
+    fillPdfText(form, `${p}.num_SIRETMandant[0]`, partySiret(client), 14);
     fillPdfText(form, `${p}.txt_NomVoieAdresse[0]`, client.adresse);
     fillPdfText(form, `${p}.num_CodePostalAdresse[0]`, client.codePostal, 5);
     fillPdfText(form, `${p}.txt_CommuneAdresse[0]`, client.ville);
     fillPdfText(form, `${p}.txt_PaysAdresse[0]`, client.pays || 'FRANCE');
 
-    // Mandataire (professionnel)
+    // Mandataire (vendeur / pro ou particulier)
     fillPdfText(form, `${p}.txt_IdentitéMandataire[0]`, identiteMandataire);
-    fillPdfText(form, `${p}.num_SIRETMandataire[0]`, societe.siret, 14);
+    fillPdfText(form, `${p}.num_SIRETMandataire[0]`, partySiret(societe), 14);
 
     // Opération & véhicule
     fillPdfText(form, `${p}.txt_NatureOpération[0]`, natureOperation);
@@ -522,7 +524,7 @@ async function generateQuitusFiscal(data) {
     const fill = (name, value, maxLen) => fillPdfText(form, name, value, maxLen);
 
     // ——— 1. Identité & adresse de l'acquéreur (client) ———
-    const nomAcheteur = `${client.prenom || ''} ${client.nom || ''}`.trim() || client.raisonSociale || '';
+    const nomAcheteur = partyDisplayName(client);
     fill('a1', nomAcheteur);
     fill('a2', client.telephone);
     fill('a3', client.email);
@@ -597,12 +599,11 @@ async function generateQuitusFiscal(data) {
     }
     fill('a28', tva != null && tva !== '' ? String(tva) : '', 10);
 
-    // ——— 5. Mandataire (professionnel) = société ———
-    fill('b1', societe.raisonSociale);
+    // ——— 5. Mandataire = vendeur ———
+    fill('b1', partyDisplayName(societe));
     fill('b2', societe.telephone);
     fill('b3', societe.email);
-    // SIREN = 9 premiers chiffres du SIRET
-    const siret = String(societe.siret || '').replace(/\s/g, '');
+    const siret = partySiret(societe);
     fill('b4', siret.slice(0, 9) || societe.siren || '', 11);
 
     const adrSte = parseAdresseFrancaise(societe.adresse);
@@ -721,14 +722,23 @@ async function generateCerfa13750(data) {
     fillField(`${basePath}.CityName1[0]`, (data.client.lieuNaissance || '').trim());
 
     // Titulaire (personne physique) — champs anglais du formulaire officiel
-    fillField(`${basePath}.Name[0]`, (data.client.prenom || '').trim());
-    fillField(`${basePath}.FamilyName[0]`, (data.client.nom || '').trim());
+    fillField(`${basePath}.Name[0]`, isPro(data.client) ? '' : (data.client.prenom || '').trim());
+    fillField(`${basePath}.FamilyName[0]`, isPro(data.client)
+      ? partyDisplayName(data.client)
+      : (data.client.nom || '').trim());
     fillField(`${basePath}.StreetName[0]`, (data.client.adresse || '').trim());
     fillField(`${basePath}.Postcode[0]`, (data.client.codePostal || '').trim());
     fillField(`${basePath}.CityName2[0]`, (data.client.ville || '').trim());
     fillField(`${basePath}.DPT[0]`, departementFromCodePostal(data.client.codePostal));
     fillField(`${basePath}.telPorTitulaire[0]`, (data.client.telephone || '').trim());
     fillField(`${basePath}.mailTitulaire[0]`, (data.client.email || '').trim());
+    if (isPro(data.client) && partySiret(data.client)) {
+      try {
+        fillField(`${basePath}.SIRET[0]`, partySiret(data.client));
+      } catch {
+        // champ optionnel selon version CERFA
+      }
+    }
 
     // Flatten seulement si l'option editable n'est pas activée
     if (!data.options?.editable) {
@@ -784,8 +794,13 @@ function generateBDCMB(data) {
     doc.fontSize(12).fillColor('#1a365d').text('VENDEUR', { underline: true });
     doc.moveDown(0.3);
     doc.fontSize(10).fillColor('#000000');
-    doc.text(societe.raisonSociale || '');
-    if (societe.siret) doc.text(`SIRET : ${societe.siret}`);
+    doc.text(partyDisplayName(societe));
+    if (isPro(societe) && partySiret(societe)) doc.text(`SIRET : ${partySiret(societe)}`);
+    if (isParticulier(societe) && societe.dateNaissance) {
+      doc.text(
+        `Né(e) le ${formatDateFR(societe.dateNaissance)}${societe.lieuNaissance ? ` à ${societe.lieuNaissance}` : ''}`
+      );
+    }
     doc.text(`${societe.adresse || ''}`);
     doc.text(`${societe.codePostal || ''} ${societe.ville || ''}`.trim());
     if (societe.telephone) doc.text(`Tél. : ${societe.telephone}`);
@@ -796,12 +811,13 @@ function generateBDCMB(data) {
     doc.fontSize(12).fillColor('#1a365d').text('ACHETEUR', { underline: true });
     doc.moveDown(0.3);
     doc.fontSize(10).fillColor('#000000');
-    doc.text(`${client.prenom || ''} ${client.nom || ''}`.trim());
+    doc.text(partyDisplayName(client));
+    if (isPro(client) && partySiret(client)) doc.text(`SIRET : ${partySiret(client)}`);
     doc.text(`${client.adresse || ''}`);
     doc.text(`${client.codePostal || ''} ${client.ville || ''}`.trim());
     if (client.telephone) doc.text(`Tél. : ${client.telephone}`);
     if (client.email) doc.text(`Email : ${client.email}`);
-    if (client.dateNaissance) {
+    if (isParticulier(client) && client.dateNaissance) {
       doc.text(
         `Né(e) le ${formatDateFR(client.dateNaissance)}${client.lieuNaissance ? ` à ${client.lieuNaissance}` : ''}`
       );
@@ -1135,10 +1151,12 @@ function generateFactureWithPDFKit(data) {
     // Informations vendeur
     doc.fontSize(12).text('VENDEUR:', { underline: true });
     doc.fontSize(10);
-    doc.text(`${data.societe.raisonSociale}`);
-    doc.text(`SIRET: ${data.societe.siret}`);
-    doc.text(`${data.societe.adresse}`);
-    doc.text(`${data.societe.codePostal} ${data.societe.ville}`);
+    doc.text(partyDisplayName(data.societe));
+    if (isPro(data.societe) && partySiret(data.societe)) {
+      doc.text(`SIRET: ${partySiret(data.societe)}`);
+    }
+    doc.text(`${data.societe.adresse || ''}`);
+    doc.text(`${data.societe.codePostal || ''} ${data.societe.ville || ''}`.trim());
     if (data.societe.telephone) doc.text(`Tél: ${data.societe.telephone}`);
     if (data.societe.email) doc.text(`Email: ${data.societe.email}`);
     doc.moveDown();
@@ -1146,9 +1164,12 @@ function generateFactureWithPDFKit(data) {
     // Informations acheteur
     doc.fontSize(12).text('ACHETEUR:', { underline: true });
     doc.fontSize(10);
-    doc.text(`${data.client.prenom} ${data.client.nom}`);
-    doc.text(`${data.client.adresse}`);
-    doc.text(`${data.client.codePostal} ${data.client.ville}`);
+    doc.text(partyDisplayName(data.client));
+    if (isPro(data.client) && partySiret(data.client)) {
+      doc.text(`SIRET: ${partySiret(data.client)}`);
+    }
+    doc.text(`${data.client.adresse || ''}`);
+    doc.text(`${data.client.codePostal || ''} ${data.client.ville || ''}`.trim());
     doc.moveDown();
 
     // Détails de la vente
@@ -1231,13 +1252,19 @@ function generateContratVente(data) {
     doc.moveDown(0.45); // Réduction de 10% (0.5 -> 0.45)
     doc.fontSize(10);
     doc.text('Le VENDEUR:');
-    doc.text(`${data.societe.raisonSociale}, SIRET ${data.societe.siret}`);
-    doc.text(`${data.societe.adresse}, ${data.societe.codePostal} ${data.societe.ville}`);
-    doc.moveDown(0.9); // Réduction de 10% (1 -> 0.9)
+    const vendeurLine = isPro(data.societe)
+      ? `${partyDisplayName(data.societe)}${partySiret(data.societe) ? `, SIRET ${partySiret(data.societe)}` : ''}`
+      : partyDisplayName(data.societe);
+    doc.text(vendeurLine);
+    doc.text(`${data.societe.adresse || ''}, ${data.societe.codePostal || ''} ${data.societe.ville || ''}`.trim());
+    doc.moveDown(0.9);
     doc.text('L\'ACHETEUR:');
-    doc.text(`${data.client.prenom} ${data.client.nom}`);
-    doc.text(`${data.client.adresse}, ${data.client.codePostal} ${data.client.ville}`);
-    doc.moveDown(0.9); // Réduction de 10% (1 -> 0.9)
+    const acheteurLine = isPro(data.client)
+      ? `${partyDisplayName(data.client)}${partySiret(data.client) ? `, SIRET ${partySiret(data.client)}` : ''}`
+      : partyDisplayName(data.client);
+    doc.text(acheteurLine);
+    doc.text(`${data.client.adresse || ''}, ${data.client.codePostal || ''} ${data.client.ville || ''}`.trim());
+    doc.moveDown(0.9);
 
     // Article 1 - Objet
     doc.fontSize(11).text('ARTICLE 1 - OBJET', { underline: true });

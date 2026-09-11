@@ -7,6 +7,7 @@ import {
   BRAND_HEADLINE,
   BRAND_SUPPORT
 } from '../brand';
+import PartyTypeToggle from '../components/PartyTypeToggle';
 import './Home.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -20,8 +21,11 @@ export default function Home() {
   const { user } = useAuth();
   const [formData, setFormData] = useState({
     societe: {
+      type: 'pro',
       raisonSociale: '',
       siret: '',
+      nom: '',
+      prenom: '',
       adresse: '',
       codePostal: '',
       ville: '',
@@ -29,8 +33,11 @@ export default function Home() {
       email: ''
     },
     client: {
+      type: 'particulier',
       nom: '',
       prenom: '',
+      raisonSociale: '',
+      siret: '',
       adresse: '',
       codePostal: '',
       ville: '',
@@ -115,6 +122,7 @@ export default function Home() {
     setError(null);
 
     try {
+      localStorage.setItem('societeData', JSON.stringify(formData.societe));
       const response = await axios.post(
         `${API_URL}/api/documents/public/generate`,
         formData,
@@ -189,23 +197,52 @@ export default function Home() {
 
             <form onSubmit={handleSubmit} className="ac-form">
               <fieldset className="ac-fieldset">
-                <legend>Société vendeur</legend>
+                <legend>Vendeur</legend>
+                <PartyTypeToggle
+                  id="vendeur-type"
+                  label="Statut du vendeur"
+                  value={formData.societe.type}
+                  onChange={(type) => handleChange('societe', 'type', type)}
+                />
                 <div className="ac-grid">
-                  <input
-                    name="societe-raison"
-                    type="text"
-                    placeholder="Raison sociale"
-                    value={formData.societe.raisonSociale}
-                    onChange={(e) => handleChange('societe', 'raisonSociale', e.target.value)}
-                    required
-                  />
-                  <input
-                    name="societe-siret"
-                    type="text"
-                    placeholder="SIRET"
-                    value={formData.societe.siret}
-                    onChange={(e) => handleChange('societe', 'siret', e.target.value)}
-                  />
+                  {formData.societe.type === 'pro' ? (
+                    <>
+                      <input
+                        name="societe-raison"
+                        type="text"
+                        placeholder="Raison sociale"
+                        value={formData.societe.raisonSociale}
+                        onChange={(e) => handleChange('societe', 'raisonSociale', e.target.value)}
+                        required
+                      />
+                      <input
+                        name="societe-siret"
+                        type="text"
+                        placeholder="SIRET"
+                        value={formData.societe.siret}
+                        onChange={(e) => handleChange('societe', 'siret', e.target.value)}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <input
+                        name="societe-prenom"
+                        type="text"
+                        placeholder="Prénom"
+                        value={formData.societe.prenom}
+                        onChange={(e) => handleChange('societe', 'prenom', e.target.value)}
+                        required
+                      />
+                      <input
+                        name="societe-nom"
+                        type="text"
+                        placeholder="Nom"
+                        value={formData.societe.nom}
+                        onChange={(e) => handleChange('societe', 'nom', e.target.value)}
+                        required
+                      />
+                    </>
+                  )}
                   <input
                     name="societe-adresse"
                     type="text"
@@ -232,26 +269,54 @@ export default function Home() {
               </fieldset>
 
               <fieldset className="ac-fieldset">
-                <legend>Client acheteur</legend>
+                <legend>Acheteur</legend>
+                <PartyTypeToggle
+                  id="acheteur-type"
+                  label="Statut de l’acheteur"
+                  value={formData.client.type}
+                  onChange={(type) => handleChange('client', 'type', type)}
+                />
                 <div className="ac-grid">
-                  <input
-                    name="client-prenom"
-                    type="text"
-                    placeholder="Prénom"
-                    autoComplete="given-name"
-                    value={formData.client.prenom}
-                    onChange={(e) => handleChange('client', 'prenom', e.target.value)}
-                    required
-                  />
-                  <input
-                    name="client-nom"
-                    type="text"
-                    placeholder="Nom"
-                    autoComplete="family-name"
-                    value={formData.client.nom}
-                    onChange={(e) => handleChange('client', 'nom', e.target.value)}
-                    required
-                  />
+                  {formData.client.type === 'pro' ? (
+                    <>
+                      <input
+                        name="client-raison"
+                        type="text"
+                        placeholder="Raison sociale"
+                        value={formData.client.raisonSociale}
+                        onChange={(e) => handleChange('client', 'raisonSociale', e.target.value)}
+                        required
+                      />
+                      <input
+                        name="client-siret"
+                        type="text"
+                        placeholder="SIRET"
+                        value={formData.client.siret}
+                        onChange={(e) => handleChange('client', 'siret', e.target.value)}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <input
+                        name="client-prenom"
+                        type="text"
+                        placeholder="Prénom"
+                        autoComplete="given-name"
+                        value={formData.client.prenom}
+                        onChange={(e) => handleChange('client', 'prenom', e.target.value)}
+                        required
+                      />
+                      <input
+                        name="client-nom"
+                        type="text"
+                        placeholder="Nom"
+                        autoComplete="family-name"
+                        value={formData.client.nom}
+                        onChange={(e) => handleChange('client', 'nom', e.target.value)}
+                        required
+                      />
+                    </>
+                  )}
                   <input
                     name="client-adresse"
                     type="text"

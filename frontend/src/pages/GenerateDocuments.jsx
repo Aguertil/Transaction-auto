@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { BRAND_NAME } from '../brand';
+import PartyTypeToggle from '../components/PartyTypeToggle';
 import './GenerateDocuments.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -18,17 +19,25 @@ export default function GenerateDocuments() {
   const [availableDocs, setAvailableDocs] = useState({ free: [], premium: [] });
   const [formData, setFormData] = useState({
     societe: {
+      type: 'pro',
       raisonSociale: '',
       siret: '',
+      nom: '',
+      prenom: '',
       adresse: '',
       codePostal: '',
       ville: '',
       telephone: '',
-      email: ''
+      email: '',
+      dateNaissance: '',
+      lieuNaissance: ''
     },
     client: {
+      type: 'particulier',
       nom: '',
       prenom: '',
+      raisonSociale: '',
+      siret: '',
       adresse: '',
       codePostal: '',
       ville: '',
@@ -91,12 +100,42 @@ export default function GenerateDocuments() {
     fetchAvailableDocs();
     const saved = localStorage.getItem('societeData');
     if (saved) {
-      const societe = JSON.parse(saved);
-      setFormData(prev => ({ ...prev, societe }));
+      try {
+        const societe = JSON.parse(saved);
+        setFormData(prev => ({
+          ...prev,
+          societe: { ...prev.societe, ...societe, type: societe.type || prev.societe.type }
+        }));
+      } catch {
+        /* ignore */
+      }
     }
-    // Demander la localisation au chargement pour le lieu de signature
     requestGeolocation();
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    setFormData(prev => {
+      const isProAccount = user.accountType === 'pro';
+      const nextSociete = { ...prev.societe };
+      if (isProAccount) {
+        nextSociete.type = 'pro';
+        if (user.societe?.raisonSociale) nextSociete.raisonSociale = user.societe.raisonSociale;
+        if (user.societe?.siret) nextSociete.siret = user.societe.siret;
+        if (user.societe?.adresse) nextSociete.adresse = user.societe.adresse;
+        if (user.societe?.codePostal) nextSociete.codePostal = user.societe.codePostal;
+        if (user.societe?.ville) nextSociete.ville = user.societe.ville;
+        if (user.societe?.telephone) nextSociete.telephone = user.societe.telephone;
+        if (user.email) nextSociete.email = user.email;
+      } else {
+        nextSociete.type = 'particulier';
+        if (user.prenom) nextSociete.prenom = user.prenom;
+        if (user.nom) nextSociete.nom = user.nom;
+        if (user.email) nextSociete.email = user.email;
+      }
+      return { ...prev, societe: nextSociete };
+    });
+  }, [user]);
 
   const requestGeolocation = () => {
     if (!navigator.geolocation) {
@@ -387,21 +426,60 @@ export default function GenerateDocuments() {
           </section>
 
           <section className="form-section">
-            <h3>Société vendeur</h3>
+            <h3>Vendeur</h3>
+            <PartyTypeToggle
+              id="gen-vendeur-type"
+              label="Statut du vendeur"
+              value={formData.societe.type}
+              onChange={(type) => handleChange('societe', 'type', type)}
+            />
             <div className="form-grid">
-              <input
-                type="text"
-                placeholder="Raison sociale"
-                value={formData.societe.raisonSociale}
-                onChange={(e) => handleChange('societe', 'raisonSociale', e.target.value)}
-                required
-              />
-              <input
-                type="text"
-                placeholder="SIRET"
-                value={formData.societe.siret}
-                onChange={(e) => handleChange('societe', 'siret', e.target.value)}
-              />
+              {formData.societe.type === 'pro' ? (
+                <>
+                  <input
+                    type="text"
+                    placeholder="Raison sociale"
+                    value={formData.societe.raisonSociale}
+                    onChange={(e) => handleChange('societe', 'raisonSociale', e.target.value)}
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="SIRET"
+                    value={formData.societe.siret}
+                    onChange={(e) => handleChange('societe', 'siret', e.target.value)}
+                  />
+                </>
+              ) : (
+                <>
+                  <input
+                    type="text"
+                    placeholder="Prénom"
+                    value={formData.societe.prenom}
+                    onChange={(e) => handleChange('societe', 'prenom', e.target.value)}
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="Nom"
+                    value={formData.societe.nom}
+                    onChange={(e) => handleChange('societe', 'nom', e.target.value)}
+                    required
+                  />
+                  <input
+                    type="date"
+                    title="Date de naissance"
+                    value={formData.societe.dateNaissance || ''}
+                    onChange={(e) => handleChange('societe', 'dateNaissance', e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Lieu de naissance"
+                    value={formData.societe.lieuNaissance || ''}
+                    onChange={(e) => handleChange('societe', 'lieuNaissance', e.target.value)}
+                  />
+                </>
+              )}
               <input
                 type="text"
                 placeholder="Adresse"
@@ -437,22 +515,60 @@ export default function GenerateDocuments() {
           </section>
 
           <section className="form-section">
-            <h3>Client acheteur</h3>
+            <h3>Acheteur</h3>
+            <PartyTypeToggle
+              id="gen-acheteur-type"
+              label="Statut de l’acheteur"
+              value={formData.client.type}
+              onChange={(type) => handleChange('client', 'type', type)}
+            />
             <div className="form-grid">
-              <input
-                type="text"
-                placeholder="Prénom"
-                value={formData.client.prenom}
-                onChange={(e) => handleChange('client', 'prenom', e.target.value)}
-                required
-              />
-              <input
-                type="text"
-                placeholder="Nom"
-                value={formData.client.nom}
-                onChange={(e) => handleChange('client', 'nom', e.target.value)}
-                required
-              />
+              {formData.client.type === 'pro' ? (
+                <>
+                  <input
+                    type="text"
+                    placeholder="Raison sociale"
+                    value={formData.client.raisonSociale || ''}
+                    onChange={(e) => handleChange('client', 'raisonSociale', e.target.value)}
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="SIRET"
+                    value={formData.client.siret || ''}
+                    onChange={(e) => handleChange('client', 'siret', e.target.value)}
+                  />
+                </>
+              ) : (
+                <>
+                  <input
+                    type="text"
+                    placeholder="Prénom"
+                    value={formData.client.prenom}
+                    onChange={(e) => handleChange('client', 'prenom', e.target.value)}
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="Nom"
+                    value={formData.client.nom}
+                    onChange={(e) => handleChange('client', 'nom', e.target.value)}
+                    required
+                  />
+                  <input
+                    type="date"
+                    title="Date de naissance"
+                    value={formData.client.dateNaissance}
+                    onChange={(e) => handleChange('client', 'dateNaissance', e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Lieu de naissance"
+                    value={formData.client.lieuNaissance}
+                    onChange={(e) => handleChange('client', 'lieuNaissance', e.target.value)}
+                  />
+                </>
+              )}
               <input
                 type="text"
                 placeholder="Adresse"
@@ -486,18 +602,6 @@ export default function GenerateDocuments() {
                 placeholder="Email"
                 value={formData.client.email}
                 onChange={(e) => handleChange('client', 'email', e.target.value)}
-              />
-              <input
-                type="date"
-                placeholder="Date de naissance"
-                value={formData.client.dateNaissance}
-                onChange={(e) => handleChange('client', 'dateNaissance', e.target.value)}
-              />
-              <input
-                type="text"
-                placeholder="Lieu de naissance"
-                value={formData.client.lieuNaissance}
-                onChange={(e) => handleChange('client', 'lieuNaissance', e.target.value)}
               />
             </div>
           </section>

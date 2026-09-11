@@ -28,6 +28,21 @@ const userSchema = new mongoose.Schema({
     enum: ['gratuit', 'premium', 'admin'],
     default: 'gratuit'
   },
+  // Type de compte : particulier ou professionnel (garage, auto-école, etc.)
+  accountType: {
+    type: String,
+    enum: ['particulier', 'pro'],
+    default: 'particulier'
+  },
+  // Infos société (si accountType === 'pro')
+  societe: {
+    raisonSociale: { type: String, trim: true },
+    siret: { type: String, trim: true },
+    adresse: { type: String, trim: true },
+    codePostal: { type: String, trim: true },
+    ville: { type: String, trim: true },
+    telephone: { type: String, trim: true }
+  },
   googleId: {
     type: String,
     sparse: true,

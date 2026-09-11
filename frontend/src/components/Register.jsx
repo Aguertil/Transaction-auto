@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { BRAND_NAME } from '../brand';
+import PartyTypeToggle from './PartyTypeToggle';
 import './Auth.css';
 
 export default function Register() {
@@ -10,7 +11,16 @@ export default function Register() {
     password: '',
     confirmPassword: '',
     nom: '',
-    prenom: ''
+    prenom: '',
+    accountType: 'particulier',
+    societe: {
+      raisonSociale: '',
+      siret: '',
+      adresse: '',
+      codePostal: '',
+      ville: '',
+      telephone: ''
+    }
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,6 +33,13 @@ export default function Register() {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSocieteChange = (e) => {
+    setFormData({
+      ...formData,
+      societe: { ...formData.societe, [e.target.name]: e.target.value }
     });
   };
 
@@ -40,13 +57,22 @@ export default function Register() {
       return;
     }
 
+    if (formData.accountType === 'pro' && !formData.societe.raisonSociale.trim()) {
+      setError('Indiquez la raison sociale de votre société');
+      return;
+    }
+
     setLoading(true);
 
     const result = await register(
       formData.email,
       formData.password,
       formData.nom,
-      formData.prenom
+      formData.prenom,
+      {
+        accountType: formData.accountType,
+        societe: formData.accountType === 'pro' ? formData.societe : undefined
+      }
     );
     setLoading(false);
 
@@ -63,13 +89,20 @@ export default function Register() {
 
   return (
     <div className="auth-container">
-      <div className="auth-card">
+      <div className="auth-card auth-card-wide">
         <h2>Inscription</h2>
         <p className="auth-subtitle">Créez votre compte {BRAND_NAME} — tous les documents inclus</p>
 
         {error && <div className="error-message">{error}</div>}
 
         <form onSubmit={handleSubmit}>
+          <PartyTypeToggle
+            id="account-type"
+            label="Type de compte"
+            value={formData.accountType}
+            onChange={(accountType) => setFormData({ ...formData, accountType })}
+          />
+
           <div className="form-row">
             <div className="form-group">
               <label htmlFor="register-prenom">Prénom</label>
@@ -99,6 +132,67 @@ export default function Register() {
               />
             </div>
           </div>
+
+          {formData.accountType === 'pro' && (
+            <div className="pro-fields">
+              <div className="form-group">
+                <label htmlFor="register-raison">Raison sociale</label>
+                <input
+                  id="register-raison"
+                  type="text"
+                  name="raisonSociale"
+                  value={formData.societe.raisonSociale}
+                  onChange={handleSocieteChange}
+                  required
+                  placeholder="Garage Dupont SARL"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="register-siret">SIRET</label>
+                <input
+                  id="register-siret"
+                  type="text"
+                  name="siret"
+                  value={formData.societe.siret}
+                  onChange={handleSocieteChange}
+                  placeholder="14 chiffres"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="register-ste-adresse">Adresse société</label>
+                <input
+                  id="register-ste-adresse"
+                  type="text"
+                  name="adresse"
+                  value={formData.societe.adresse}
+                  onChange={handleSocieteChange}
+                  placeholder="Adresse"
+                />
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="register-ste-cp">Code postal</label>
+                  <input
+                    id="register-ste-cp"
+                    type="text"
+                    name="codePostal"
+                    value={formData.societe.codePostal}
+                    onChange={handleSocieteChange}
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="register-ste-ville">Ville</label>
+                  <input
+                    id="register-ste-ville"
+                    type="text"
+                    name="ville"
+                    value={formData.societe.ville}
+                    onChange={handleSocieteChange}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="form-group">
             <label htmlFor="register-email">Email</label>
@@ -161,6 +255,7 @@ export default function Register() {
           </svg>
           Continuer avec Google
         </button>
+        <p className="auth-hint">Compte Google = particulier par défaut (modifiable plus tard).</p>
 
         <p className="auth-footer">
           Déjà un compte ? <Link to="/login">Se connecter</Link>
@@ -169,4 +264,3 @@ export default function Register() {
     </div>
   );
 }
-

@@ -71,8 +71,10 @@ export default function Admin() {
     const admins = users.filter((u) => u.role === 'admin').length;
     const active = users.filter((u) => u.isActive !== false).length;
     const google = users.filter((u) => u.googleId).length;
+    const pros = users.filter((u) => u.accountType === 'pro').length;
+    const particuliers = users.filter((u) => u.accountType !== 'pro').length;
     const docs = users.reduce((sum, u) => sum + (u.documentsCount || 0), 0);
-    return { total, admins, active, google, docs };
+    return { total, admins, active, google, pros, particuliers, docs };
   }, [users]);
 
   const updateUserRole = async (userId, role) => {
@@ -173,6 +175,14 @@ export default function Admin() {
                     <div className="overview-card">
                       <span className="overview-label">Admins</span>
                       <strong className="overview-value">{overview.admins}</strong>
+                    </div>
+                  <div className="overview-card">
+                      <span className="overview-label">Pros</span>
+                      <strong className="overview-value">{overview.pros}</strong>
+                    </div>
+                    <div className="overview-card">
+                      <span className="overview-label">Particuliers</span>
+                      <strong className="overview-value">{overview.particuliers}</strong>
                     </div>
                     <div className="overview-card">
                       <span className="overview-label">Via Google</span>
@@ -284,6 +294,7 @@ export default function Admin() {
                       <thead>
                         <tr>
                           <th>Compte</th>
+                          <th>Type</th>
                           <th>Rôle</th>
                           <th>Autorisations</th>
                           <th>Auth</th>
@@ -296,7 +307,7 @@ export default function Admin() {
                       <tbody>
                         {filteredUsers.length === 0 ? (
                           <tr>
-                            <td colSpan={8} className="empty-cell">Aucun utilisateur</td>
+                            <td colSpan={9} className="empty-cell">Aucun utilisateur</td>
                           </tr>
                         ) : (
                           filteredUsers.map((u) => {
@@ -306,8 +317,18 @@ export default function Admin() {
                                 <td>
                                   <div className="user-cell">
                                     <strong>{u.email}</strong>
-                                    <span>{[u.prenom, u.nom].filter(Boolean).join(' ') || '—'}</span>
+                                    <span>
+                                      {[u.prenom, u.nom].filter(Boolean).join(' ') || '—'}
+                                      {u.accountType === 'pro' && u.societe?.raisonSociale
+                                        ? ` · ${u.societe.raisonSociale}`
+                                        : ''}
+                                    </span>
                                   </div>
+                                </td>
+                                <td>
+                                  <span className={`chip ${u.accountType === 'pro' ? 'admin' : 'on'}`}>
+                                    {p.accountTypeLabel || (u.accountType === 'pro' ? 'Professionnel' : 'Particulier')}
+                                  </span>
                                 </td>
                                 <td>
                                   <select

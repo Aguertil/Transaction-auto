@@ -52,6 +52,7 @@ function setupGoogleOAuth() {
           nom: profile.name?.familyName || '',
           prenom: profile.name?.givenName || '',
           role: 'gratuit',
+          accountType: 'particulier',
           lastLogin: new Date()
         });
         await user.save();
@@ -77,30 +78,50 @@ function setupGoogleOAuth() {
  */
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, nom, prenom } = req.body;
+    const {
+      email,
+      password,
+      nom,
+      prenom,
+      accountType = 'particulier',
+      societe
+    } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ error: 'Email et mot de passe requis' });
     }
 
-    // Vérifier si l'utilisateur existe déjà
+    const type = accountType === 'pro' ? 'pro' : 'particulier';
+    if (type === 'pro' && !societe?.raisonSociale) {
+      return res.status(400).json({ error: 'Raison sociale requise pour un compte professionnel' });
+    }
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: 'Cet email est déjà utilisé' });
     }
 
-    // Créer l'utilisateur
     const user = new User({
       email,
       password,
       nom,
       prenom,
-      role: 'gratuit'
+      role: 'gratuit',
+      accountType: type,
+      societe: type === 'pro'
+        ? {
+            raisonSociale: societe?.raisonSociale || '',
+            siret: societe?.siret || '',
+            adresse: societe?.adresse || '',
+            codePostal: societe?.codePostal || '',
+            ville: societe?.ville || '',
+            telephone: societe?.telephone || ''
+          }
+        : undefined
     });
 
     await user.save();
 
-    // Générer le token
     const token = generateToken(user._id);
 
     res.status(201).json({

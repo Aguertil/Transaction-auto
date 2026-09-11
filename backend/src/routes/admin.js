@@ -11,10 +11,13 @@ router.use(authenticateToken, requireAdmin);
 function permissionSummary(user) {
   const isAdmin = user.role === 'admin';
   const isActive = user.isActive !== false;
+  const accountType = user.accountType === 'pro' ? 'pro' : 'particulier';
   return {
     canLogin: isActive,
-    canGenerateAllDocuments: isActive, // paiement mis de côté : tout compte actif
+    canGenerateAllDocuments: isActive,
     canAccessAdmin: isAdmin && isActive,
+    accountType,
+    accountTypeLabel: accountType === 'pro' ? 'Professionnel' : 'Particulier',
     authMethod: user.googleId ? (user.password ? 'google+password' : 'google') : 'password',
     roleLabel:
       user.role === 'admin' ? 'Administrateur' :

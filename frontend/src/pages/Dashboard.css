@@ -131,10 +131,22 @@
   color: var(--accent-deep);
 }
 
+.badge-pro {
+  background: #e8f0fe;
+  color: #1a56b0;
+}
+
 .badge-premium,
 .badge-free {
   background: var(--mist);
   color: var(--muted);
+}
+
+.user-company {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+  color: var(--ink);
+  font-weight: 600;
 }
 
 .dashboard-grid {
