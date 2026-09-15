@@ -72,7 +72,7 @@ connectDatabase()
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'ok', 
-    message: 'Auto-Cerfa API',
+    message: 'ActeDeVente API',
     version: '2.0.0',
     features: {
       public: true,
