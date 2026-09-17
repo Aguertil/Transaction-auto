@@ -54,7 +54,8 @@ export function SiteFooter() {
             <ul>
               <li><Link to="/blog">Blog</Link></li>
               <li><Link to="/blog/comment-remplir-cerfa-15776">Remplir le CERFA 15776</Link></li>
-              <li><Link to="/blog/documents-vente-pro-particulier">Vente pro / particulier</Link></li>
+              <li><Link to="/blog/importer-voiture-ue-papiers-necessaires">Import voiture UE</Link></li>
+              <li><Link to="/blog/demande-quitus-fiscal-ants-grand-est-sie">Quitus ANTS / SIE</Link></li>
             </ul>
           </div>
           <div>

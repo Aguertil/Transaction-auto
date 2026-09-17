@@ -35,4 +35,19 @@
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
+  <url>
+    <loc>https://www.actedevente.fr/blog/importer-voiture-ue-papiers-necessaires</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.actedevente.fr/blog/checklist-import-vehicule-occasion-etranger</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.actedevente.fr/blog/demande-quitus-fiscal-ants-grand-est-sie</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>
