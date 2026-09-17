@@ -3,9 +3,16 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { BRAND_NAME } from '../brand';
 import PartyTypeToggle from './PartyTypeToggle';
+import { usePageMeta } from '../seo/usePageMeta';
 import './Auth.css';
 
 export default function Register() {
+  usePageMeta({
+    title: 'Inscription',
+    description: `Créez votre compte ${BRAND_NAME} — documents CERFA et actes de vente inclus.`,
+    path: '/register',
+    noIndex: true
+  });
   const [formData, setFormData] = useState({
     email: '',
     password: '',

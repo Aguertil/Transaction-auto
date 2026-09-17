@@ -8,7 +8,10 @@ import {
   BRAND_SUPPORT
 } from '../brand';
 import PartyTypeToggle from '../components/PartyTypeToggle';
+import { SiteFooter } from '../components/SiteChrome';
+import { usePageMeta } from '../seo/usePageMeta';
 import './Home.css';
+import '../components/SiteChrome.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -19,6 +22,14 @@ function todayLocalISO() {
 
 export default function Home() {
   const { user } = useAuth();
+
+  usePageMeta({
+    title: 'ActeDeVente.fr — CERFA 15776 & actes de vente auto en ligne',
+    description:
+      'Générez en ligne votre certificat de cession CERFA 15776, mandat, facture et contrat de vente véhicule. Gratuit pour démarrer — pro ou particulier.',
+    path: '/'
+  });
+
   const [formData, setFormData] = useState({
     societe: {
       type: 'pro',
@@ -148,7 +159,11 @@ export default function Home() {
   return (
     <div className="home-page">
       <nav className="ac-nav" aria-label="Navigation principale">
-        <a href="#cerfa" className="ac-nav-skip">CERFA gratuit</a>
+        <div className="ac-nav-links">
+          <a href="#cerfa" className="ac-nav-skip">CERFA 15776</a>
+          <Link to="/documents-vente-vehicule" className="ac-nav-skip">Documents</Link>
+          <Link to="/blog" className="ac-nav-skip">Blog</Link>
+        </div>
         <div className="ac-nav-actions">
           {user ? (
             <Link to="/dashboard" className="ac-btn ac-btn-ghost">Mon espace</Link>
@@ -171,8 +186,10 @@ export default function Home() {
         </div>
 
         <div className="ac-hero-content">
-          <p className="ac-brand">{BRAND_NAME}</p>
-          <h1 className="ac-headline">{BRAND_HEADLINE}</h1>
+          <h1 className="ac-brand">
+            {BRAND_NAME}
+            <span className="ac-brand-sub">{BRAND_HEADLINE}</span>
+          </h1>
           <p className="ac-support">{BRAND_SUPPORT}</p>
           <div className="ac-hero-ctas">
             <a href="#cerfa" className="ac-btn ac-btn-accent">Générer le CERFA 15776</a>
@@ -467,6 +484,28 @@ export default function Home() {
           </div>
         </section>
 
+        <section className="ac-section ac-seo-block" aria-labelledby="why-title">
+          <div className="ac-section-inner">
+            <h2 id="why-title">Actes de vente et CERFA pour garages et particuliers</h2>
+            <p>
+              ActeDeVente.fr vous aide à produire un certificat de cession (CERFA 15776), un mandat
+              d’immatriculation, une facture ou un contrat selon que le vendeur et l’acheteur sont
+              professionnels ou particuliers.
+            </p>
+            <ul className="ac-seo-list">
+              <li>
+                <Link to="/cerfa-15776">Guide CERFA 15776</Link> — certificat de cession en ligne
+              </li>
+              <li>
+                <Link to="/documents-vente-vehicule">Tous les documents</Link> — pack vente véhicule
+              </li>
+              <li>
+                <Link to="/blog">Blog</Link> — conseils et procédures
+              </li>
+            </ul>
+          </div>
+        </section>
+
         <section className="ac-section ac-account">
           <div className="ac-section-inner ac-account-inner">
             <h2>{user ? 'Votre pack documents est prêt' : 'Un compte pour tous les CERFA'}</h2>
@@ -482,12 +521,27 @@ export default function Home() {
             )}
           </div>
         </section>
+
+        <section className="ac-section ac-faq" aria-labelledby="faq-title">
+          <div className="ac-section-inner">
+            <h2 id="faq-title">Questions fréquentes</h2>
+            <div className="faq-item">
+              <h3>Le CERFA 15776 est-il gratuit sur ActeDeVente.fr ?</h3>
+              <p>Oui. Le certificat de cession de base se génère sans inscription. Le pack complet nécessite un compte gratuit.</p>
+            </div>
+            <div className="faq-item">
+              <h3>Puis-je indiquer un vendeur particulier et un acheteur professionnel ?</h3>
+              <p>Oui. Chaque partie a un sélecteur Particulier / Professionnel : les champs et les PDF s’adaptent.</p>
+            </div>
+            <div className="faq-item">
+              <h3>Les documents remplacent-ils une démarche ANTS officielle ?</h3>
+              <p>Non. Nous générons des formulaires remplis à vérifier et à utiliser dans vos démarches. La responsabilité des données vous appartient.</p>
+            </div>
+          </div>
+        </section>
       </main>
 
-      <footer className="ac-footer">
-        <span className="ac-footer-brand">{BRAND_NAME}</span>
-        <span className="ac-footer-note">Documents automobiles réglementaires</span>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

@@ -2,9 +2,16 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { BRAND_NAME } from '../brand';
+import { usePageMeta } from '../seo/usePageMeta';
 import './Auth.css';
 
 export default function Login() {
+  usePageMeta({
+    title: 'Connexion',
+    description: `Connectez-vous à votre compte ${BRAND_NAME}.`,
+    path: '/login',
+    noIndex: true
+  });
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');

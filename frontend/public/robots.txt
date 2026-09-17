@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Allow: /blog
+Allow: /cerfa-15776
+Allow: /documents-vente-vehicule
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /generate
+Disallow: /auth/
+Disallow: /login
+Disallow: /register
+
+Sitemap: https://www.actedevente.fr/sitemap.xml
