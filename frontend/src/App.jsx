@@ -14,6 +14,7 @@ import BlogIndex from './pages/BlogIndex';
 import BlogPost from './pages/BlogPost';
 import Cerfa15776Page from './pages/Cerfa15776Page';
 import DocumentsPage from './pages/DocumentsPage';
+import AnalyticsListener from './components/AnalyticsListener';
 import './index.css';
 
 function AppRoutes() {
