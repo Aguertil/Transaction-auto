@@ -78,6 +78,7 @@ function AppRoutes() {
 function App() {
   return (
     <Router>
+      <AnalyticsListener />
       <AuthProvider>
         <AppRoutes />
       </AuthProvider>
