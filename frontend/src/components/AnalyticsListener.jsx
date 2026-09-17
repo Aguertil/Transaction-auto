@@ -10,6 +10,13 @@ export default function AnalyticsListener() {
 
   useEffect(() => {
     initAnalytics();
+    // Premier page_view après init (titre parfois mis à jour juste après)
+    const path = `${location.pathname}${location.search}`;
+    const t = window.setTimeout(() => {
+      trackPageView(path, document.title);
+    }, 0);
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- init once on mount
   }, []);
 
   useEffect(() => {
