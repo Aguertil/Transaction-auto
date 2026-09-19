@@ -2,6 +2,7 @@ import express from 'express';
 import User from '../models/User.js';
 import Document from '../models/Document.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
+import { buildDocumentsWorkbook } from '../utils/exportDocumentsExcel.js';
 
 const router = express.Router();
 
@@ -236,17 +237,79 @@ router.get('/stats', async (req, res) => {
 });
 
 /**
- * Historique des documents
+ * Export Excel de toutes les saisies clients
+ * GET /api/admin/documents/export.xlsx
+ */
+router.get('/documents/export.xlsx', async (req, res) => {
+  try {
+    const { from, to } = req.query;
+    const filter = {};
+    if (from || to) {
+      filter.createdAt = {};
+      if (from) filter.createdAt.$gte = new Date(from);
+      if (to) {
+        const end = new Date(to);
+        end.setHours(23, 59, 59, 999);
+        filter.createdAt.$lte = end;
+      }
+    }
+
+    const documents = await Document.find(filter)
+      .populate('userId', 'email nom prenom role')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const buffer = await buildDocumentsWorkbook(documents);
+    const stamp = new Date().toISOString().slice(0, 10);
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="actedevente-saisies-${stamp}.xlsx"`
+    );
+    res.send(Buffer.from(buffer));
+  } catch (error) {
+    console.error('Erreur export Excel:', error);
+    res.status(500).json({ error: 'Erreur lors de l\'export Excel' });
+  }
+});
+
+/**
+ * Détail d'une saisie (données client complètes)
+ * GET /api/admin/documents/:id
+ */
+router.get('/documents/:id', async (req, res) => {
+  try {
+    const document = await Document.findById(req.params.id)
+      .populate('userId', 'email nom prenom role accountType')
+      .lean();
+
+    if (!document) {
+      return res.status(404).json({ error: 'Document non trouvé' });
+    }
+
+    res.json({ document });
+  } catch (error) {
+    console.error('Erreur récupération document:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération du document' });
+  }
+});
+
+/**
+ * Historique des documents (avec données saisies)
  * GET /api/admin/documents
  */
 router.get('/documents', async (req, res) => {
   try {
-    const { limit = 50, skip = 0 } = req.query;
+    const { limit = 100, skip = 0 } = req.query;
     const documents = await Document.find({})
       .populate('userId', 'email nom prenom role')
       .sort({ createdAt: -1 })
-      .limit(parseInt(limit))
-      .skip(parseInt(skip));
+      .limit(parseInt(limit, 10))
+      .skip(parseInt(skip, 10))
+      .lean();
 
     const total = await Document.countDocuments();
 

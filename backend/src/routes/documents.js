@@ -25,20 +25,20 @@ router.post('/public/generate', optionalAuth, async (req, res) => {
 
     const pdfBuffer = await generateAllDocuments(data);
 
-    if (req.user) {
-      try {
-        await Document.create({
-          userId: req.user._id,
-          type: 'cerfa-cession',
-          fileName: '01-CERFA-15776-Cession.pdf',
-          clientData: data.client,
-          vehiculeData: data.vehicule,
-          societeData: data.societe,
-          venteData: data.vente
-        });
-      } catch (dbError) {
-        console.warn('Erreur enregistrement document:', dbError);
-      }
+    try {
+      await Document.create({
+        userId: req.user?._id || null,
+        source: 'public',
+        type: 'cerfa-cession',
+        fileName: '01-CERFA-15776-Cession.pdf',
+        clientData: data.client || {},
+        vehiculeData: data.vehicule || {},
+        societeData: data.societe || {},
+        venteData: data.vente || {},
+        vendeurUEData: data.vendeurUE || {}
+      });
+    } catch (dbError) {
+      console.warn('Erreur enregistrement document:', dbError);
     }
 
     res.setHeader('Content-Type', 'application/zip');
@@ -68,12 +68,14 @@ router.post('/generate', authenticateToken, async (req, res) => {
         for (const docType of data.options.selectedDocuments) {
           await Document.create({
             userId: req.user._id,
+            source: 'account',
             type: docType,
             fileName: `document-${docType}.pdf`,
-            clientData: data.client,
-            vehiculeData: data.vehicule,
-            societeData: data.societe,
-            venteData: data.vente
+            clientData: data.client || {},
+            vehiculeData: data.vehicule || {},
+            societeData: data.societe || {},
+            venteData: data.vente || {},
+            vendeurUEData: data.vendeurUE || {}
           });
         }
       } catch (dbError) {

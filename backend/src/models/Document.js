@@ -4,7 +4,13 @@ const documentSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: false,
+    default: null
+  },
+  source: {
+    type: String,
+    enum: ['account', 'public'],
+    default: 'account'
   },
   type: {
     type: String,
@@ -38,13 +44,18 @@ const documentSchema = new mongoose.Schema({
   venteData: {
     type: mongoose.Schema.Types.Mixed
   },
+  vendeurUEData: {
+    type: mongoose.Schema.Types.Mixed
+  },
   createdAt: {
     type: Date,
     default: Date.now
   }
 });
 
+documentSchema.index({ createdAt: -1 });
+documentSchema.index({ userId: 1, createdAt: -1 });
+
 const Document = mongoose.model('Document', documentSchema);
 
 export default Document;
-

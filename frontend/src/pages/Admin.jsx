@@ -12,6 +12,8 @@ export default function Admin() {
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState(null);
   const [documents, setDocuments] = useState([]);
+  const [selectedDoc, setSelectedDoc] = useState(null);
+  const [exporting, setExporting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('users');
   const [search, setSearch] = useState('');
@@ -118,6 +120,47 @@ export default function Admin() {
       showMsg('Utilisateur supprimé');
     } catch (error) {
       showMsg(error.response?.data?.error || 'Erreur suppression', 'err');
+    }
+  };
+
+  const partyLabel = (party) => {
+    if (!party) return '—';
+    const company = party.raisonSociale?.trim();
+    const person = [party.prenom, party.nom].filter(Boolean).join(' ').trim();
+    return company || person || '—';
+  };
+
+  const downloadExcel = async () => {
+    setExporting(true);
+    try {
+      const response = await axios.get(`${API_URL}/api/admin/documents/export.xlsx`, {
+        responseType: 'blob'
+      });
+      const blob = new Blob([response.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `actedevente-saisies-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      showMsg('Export Excel téléchargé');
+    } catch (error) {
+      showMsg(error.response?.data?.error || 'Erreur export Excel', 'err');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const openDocDetail = async (doc) => {
+    try {
+      const response = await axios.get(`${API_URL}/api/admin/documents/${doc._id}`);
+      setSelectedDoc(response.data.document || doc);
+    } catch {
+      setSelectedDoc(doc);
     }
   };
 
@@ -428,40 +471,128 @@ export default function Admin() {
 
               {activeTab === 'documents' && (
                 <div className="admin-section">
-                  <h2>Historique des documents</h2>
+                  <div className="admin-toolbar">
+                    <h2>Saisies &amp; documents générés</h2>
+                    <div className="toolbar-actions">
+                      <button
+                        type="button"
+                        className="btn-create-user"
+                        onClick={downloadExcel}
+                        disabled={exporting || documents.length === 0}
+                      >
+                        {exporting ? 'Export…' : 'Télécharger Excel'}
+                      </button>
+                    </div>
+                  </div>
+                  <p className="admin-hint">
+                    Chaque génération enregistre vendeur, acheteur, véhicule et vente.
+                    Les formulaires publics (sans compte) sont aussi conservés.
+                  </p>
                   <div className="table-container">
                     <table className="admin-table">
                       <thead>
                         <tr>
-                          <th>Type</th>
-                          <th>Fichier</th>
-                          <th>Utilisateur</th>
                           <th>Date</th>
+                          <th>Source</th>
+                          <th>Type</th>
+                          <th>Acheteur</th>
+                          <th>Véhicule</th>
+                          <th>Prix TTC</th>
+                          <th>Compte</th>
+                          <th></th>
                         </tr>
                       </thead>
                       <tbody>
                         {documents.length === 0 ? (
                           <tr>
-                            <td colSpan={4} className="empty-cell">Aucun document</td>
+                            <td colSpan={8} className="empty-cell">Aucune saisie enregistrée</td>
                           </tr>
                         ) : (
                           documents.map((doc) => (
                             <tr key={doc._id || `${doc.fileName}-${doc.createdAt}`}>
-                              <td>{doc.type}</td>
-                              <td>{doc.fileName}</td>
                               <td>
-                                {doc.userId?.email || 'N/A'}
-                                {doc.userId?.role && (
-                                  <span className="user-role-badge">{doc.userId.role}</span>
-                                )}
+                                {doc.createdAt
+                                  ? new Date(doc.createdAt).toLocaleString('fr-FR')
+                                  : '—'}
                               </td>
-                              <td>{new Date(doc.createdAt).toLocaleDateString('fr-FR')}</td>
+                              <td>
+                                <span className={`chip ${doc.source === 'public' ? 'off' : 'on'}`}>
+                                  {doc.source === 'public' ? 'Public' : 'Compte'}
+                                </span>
+                              </td>
+                              <td>{doc.type}</td>
+                              <td>{partyLabel(doc.clientData)}</td>
+                              <td>
+                                {[doc.vehiculeData?.marque, doc.vehiculeData?.modele, doc.vehiculeData?.immatriculation]
+                                  .filter(Boolean)
+                                  .join(' · ') || '—'}
+                              </td>
+                              <td>
+                                {doc.venteData?.prixTTC
+                                  ? `${doc.venteData.prixTTC} €`
+                                  : '—'}
+                              </td>
+                              <td>{doc.userId?.email || '(sans compte)'}</td>
+                              <td>
+                                <button
+                                  type="button"
+                                  className="btn-status activate"
+                                  onClick={() => openDocDetail(doc)}
+                                >
+                                  Voir
+                                </button>
+                              </td>
                             </tr>
                           ))
                         )}
                       </tbody>
                     </table>
                   </div>
+
+                  {selectedDoc && (
+                    <div className="doc-detail-overlay" role="dialog" aria-modal="true">
+                      <div className="doc-detail-panel">
+                        <div className="doc-detail-header">
+                          <h3>Détail de la saisie</h3>
+                          <button type="button" className="btn-link-dark" onClick={() => setSelectedDoc(null)}>
+                            Fermer
+                          </button>
+                        </div>
+                        <p className="doc-detail-meta">
+                          {selectedDoc.type} ·{' '}
+                          {selectedDoc.createdAt
+                            ? new Date(selectedDoc.createdAt).toLocaleString('fr-FR')
+                            : '—'}
+                          {' · '}
+                          {selectedDoc.userId?.email || 'Sans compte'}
+                        </p>
+                        <div className="doc-detail-grid">
+                          <section>
+                            <h4>Vendeur / société</h4>
+                            <pre>{JSON.stringify(selectedDoc.societeData || {}, null, 2)}</pre>
+                          </section>
+                          <section>
+                            <h4>Acheteur</h4>
+                            <pre>{JSON.stringify(selectedDoc.clientData || {}, null, 2)}</pre>
+                          </section>
+                          <section>
+                            <h4>Véhicule</h4>
+                            <pre>{JSON.stringify(selectedDoc.vehiculeData || {}, null, 2)}</pre>
+                          </section>
+                          <section>
+                            <h4>Vente</h4>
+                            <pre>{JSON.stringify(selectedDoc.venteData || {}, null, 2)}</pre>
+                          </section>
+                          {selectedDoc.vendeurUEData && Object.keys(selectedDoc.vendeurUEData).length > 0 && (
+                            <section>
+                              <h4>Vendeur UE</h4>
+                              <pre>{JSON.stringify(selectedDoc.vendeurUEData, null, 2)}</pre>
+                            </section>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </>
