@@ -4,6 +4,7 @@ import { generateToken } from '../middleware/auth.js';
 import passport from 'passport';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../config/jwt.js';
+import { getFrontendBaseUrl } from '../config/frontend.js';
 import '../config/passport.js'; // Configuration Passport
 
 const router = express.Router();
@@ -305,7 +306,7 @@ router.get('/google', async (req, res, next) => {
  * GET /api/auth/google/callback
  */
 router.get('/google/callback', async (req, res, next) => {
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5174';
+  const frontendUrl = getFrontendBaseUrl();
   const redirectAuthError = (message) => {
     const msg = encodeURIComponent(message || 'Connexion Google échouée');
     return res.redirect(`${frontendUrl}/auth/error?message=${msg}`);

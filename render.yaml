@@ -22,11 +22,11 @@ services:
         generateValue: true
       - key: SESSION_SECRET
         generateValue: true
+      # Domaine public (CORS + redirections OAuth). L’URL .onrender.com reste aussi autorisée dans le code.
       - key: FRONTEND_URL
-        fromService:
-          type: web
-          name: auto-documents-web
-          envVarKey: RENDER_EXTERNAL_URL
+        value: https://www.actedevente.fr
+      - key: FRONTEND_PRIMARY_URL
+        value: https://www.actedevente.fr
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: GOOGLE_CLIENT_SECRET

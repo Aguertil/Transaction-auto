@@ -1,38 +1,33 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export default function AuthCallback() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { fetchUser } = useAuth();
+  const handled = useRef(false);
 
   useEffect(() => {
+    if (handled.current) return;
     const token = searchParams.get('token');
-    
+
     if (token) {
+      handled.current = true;
       localStorage.setItem('token', token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      fetchUser().then(() => {
-        navigate('/dashboard', { replace: true });
-      });
+      // Recharge pour synchroniser AuthContext (token + user) sur actedevente.fr
+      window.location.replace('/dashboard');
     } else {
       navigate('/login', { replace: true });
     }
-  }, [searchParams, navigate, fetchUser]);
+  }, [searchParams, navigate]);
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center', 
-      height: '100vh' 
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100vh'
     }}>
       <div>Connexion en cours...</div>
     </div>
   );
 }
-

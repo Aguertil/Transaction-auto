@@ -2,6 +2,7 @@ import express from 'express';
 import User from '../models/User.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { getStripe } from '../services/stripeBilling.js';
+import { getFrontendBaseUrl } from '../config/frontend.js';
 
 const router = express.Router();
 
@@ -13,7 +14,7 @@ router.post('/create-checkout-session', authenticateToken, async (req, res) => {
   try {
     const priceId = process.env.STRIPE_PRICE_ID;
     const stripe = getStripe();
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5174';
+    const frontendUrl = getFrontendBaseUrl();
 
     if (!stripe || !priceId) {
       return res.status(503).json({
@@ -81,7 +82,7 @@ router.post('/create-checkout-session', authenticateToken, async (req, res) => {
 router.post('/create-portal-session', authenticateToken, async (req, res) => {
   try {
     const stripe = getStripe();
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5174';
+    const frontendUrl = getFrontendBaseUrl();
 
     if (!stripe) {
       return res.status(503).json({ error: 'Stripe non configuré' });

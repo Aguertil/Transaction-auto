@@ -18,6 +18,7 @@ import { handleStripeWebhook } from './services/stripeBilling.js';
 // Import de la base de données
 import { connectDatabase } from './config/database.js';
 import { ensureAdminFromEnv } from './scripts/ensureAdmin.js';
+import { isOriginAllowed } from './config/frontend.js';
 // Import Passport (sans Google OAuth au chargement)
 import './config/passport.js';
 
@@ -30,9 +31,15 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware
+// Middleware — autoriser actedevente.fr ET l’URL Render
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5175',
+  origin(origin, callback) {
+    if (isOriginAllowed(origin)) {
+      return callback(null, true);
+    }
+    console.warn('CORS bloqué pour origin:', origin);
+    return callback(null, false);
+  },
   credentials: true
 }));
 
