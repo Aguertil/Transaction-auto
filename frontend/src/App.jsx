@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import Home from './pages/Home';
@@ -15,6 +15,12 @@ import BlogPost from './pages/BlogPost';
 import Cerfa15776Page from './pages/Cerfa15776Page';
 import DocumentsPage from './pages/DocumentsPage';
 import AnalyticsListener from './components/AnalyticsListener';
+import CookieBanner from './components/CookieBanner';
+import LegalPage from './pages/LegalPage';
+import SeoDocPage from './pages/SeoDocPage';
+import NotFound from './pages/NotFound';
+import { seoPages } from './content/seoPages';
+import { legalPages } from './content/legalPages';
 import './index.css';
 
 function AppRoutes() {
@@ -70,19 +76,31 @@ function AppRoutes() {
           </ProtectedRoute>
         } 
       />
-      <Route path="*" element={<Navigate to="/" />} />
+      {seoPages.map((p) => (
+        <Route key={p.path} path={p.path} element={<SeoDocPage page={p} />} />
+      ))}
+      {legalPages.map((p) => (
+        <Route key={p.path} path={p.path} element={<LegalPage page={p} />} />
+      ))}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
 
+/**
+ * Le routeur est fourni par l'appelant :
+ * - BrowserRouter dans main.jsx (navigateur)
+ * - StaticRouter dans entry-server.jsx (pré-rendu au build)
+ */
 function App() {
   return (
-    <Router>
+    <>
       <AnalyticsListener />
       <AuthProvider>
         <AppRoutes />
       </AuthProvider>
-    </Router>
+      <CookieBanner />
+    </>
   );
 }
 

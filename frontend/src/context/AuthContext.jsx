@@ -7,8 +7,11 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(localStorage.getItem('token'));
+  // SSR-safe : localStorage n'existe pas pendant le pré-rendu
+  const initialToken = typeof window !== 'undefined' ? window.localStorage.getItem('token') : null;
+  const [token, setToken] = useState(initialToken);
+  // Sans jeton, inutile d'afficher « Chargement… » : la page publique s'affiche directement
+  const [loading, setLoading] = useState(Boolean(initialToken));
 
   // Configurer axios pour inclure le token
   useEffect(() => {

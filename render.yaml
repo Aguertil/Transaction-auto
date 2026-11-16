@@ -58,7 +58,26 @@ services:
           envVarKey: RENDER_EXTERNAL_URL
       - key: VITE_GA_MEASUREMENT_ID
         sync: false
+    # Les pages publiques sont pré-rendues (dist/<page>/index.html) et servies
+    # telles quelles. Seules les routes de l'application connectée sont
+    # réécrites vers une coquille vide (noindex). Toute autre URL inconnue
+    # reçoit dist/404.html avec un vrai statut 404.
     routes:
       - type: rewrite
-        source: /*
-        destination: /index.html
+        source: /login
+        destination: /app.html
+      - type: rewrite
+        source: /register
+        destination: /app.html
+      - type: rewrite
+        source: /dashboard
+        destination: /app.html
+      - type: rewrite
+        source: /generate
+        destination: /app.html
+      - type: rewrite
+        source: /admin
+        destination: /app.html
+      - type: rewrite
+        source: /auth/*
+        destination: /app.html

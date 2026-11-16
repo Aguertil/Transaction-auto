@@ -275,3 +275,65 @@
   color: var(--muted);
   font-size: 0.95rem;
 }
+
+/* --- Liens légaux pied de page --- */
+.site-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  justify-content: center;
+  padding: 0 1.5rem 1.5rem;
+  font-size: 0.85rem;
+}
+.site-footer-links a,
+.site-footer-linkbtn {
+  color: inherit;
+  opacity: 0.75;
+  text-decoration: underline;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+.site-footer-links a:hover,
+.site-footer-linkbtn:hover { opacity: 1; }
+
+/* --- Contenus SEO : tableaux et encadrés --- */
+.seo-table-wrap { overflow-x: auto; margin: 1rem 0 1.5rem; }
+.seo-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+.seo-table th,
+.seo-table td { border: 1px solid var(--line); padding: 0.6rem 0.75rem; text-align: left; vertical-align: top; }
+.seo-table th { background: rgba(0, 0, 0, 0.03); font-weight: 600; }
+.seo-note {
+  border-left: 4px solid var(--accent-deep, #0b7a75);
+  background: rgba(0, 0, 0, 0.03);
+  padding: 0.75rem 1rem;
+  border-radius: 0 8px 8px 0;
+}
+
+/* --- Bandeau cookies --- */
+.cookie-banner {
+  position: fixed;
+  left: 1rem;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 1000;
+  max-width: 720px;
+  margin: 0 auto;
+  background: #fff;
+  color: #10202a;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  padding: 1rem 1.25rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.cookie-banner p { margin: 0; flex: 1 1 320px; font-size: 0.92rem; line-height: 1.45; }
+.cookie-banner a { color: inherit; text-decoration: underline; }
+.cookie-banner-actions { display: flex; gap: 0.5rem; }
+.cookie-btn { padding: 0.55rem 1.1rem; font-size: 0.9rem; }
+.cookie-banner .ac-btn-outline { color: #10202a; border-color: rgba(0, 0, 0, 0.25); }

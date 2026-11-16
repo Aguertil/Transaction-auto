@@ -10,6 +10,8 @@ import {
 import PartyTypeToggle from '../components/PartyTypeToggle';
 import { SiteFooter } from '../components/SiteChrome';
 import { usePageMeta } from '../seo/usePageMeta';
+import { JsonLd } from '../components/ContentBlocks';
+import { SITE_URL } from '../brand';
 import './Home.css';
 import '../components/SiteChrome.css';
 
@@ -486,11 +488,46 @@ export default function Home() {
 
         <section className="ac-section ac-seo-block" aria-labelledby="why-title">
           <div className="ac-section-inner">
+            <JsonLd
+              data={{
+                '@context': 'https://schema.org',
+                '@graph': [
+                  {
+                    '@type': 'Organization',
+                    '@id': `${SITE_URL}/#organization`,
+                    name: BRAND_NAME,
+                    url: `${SITE_URL}/`,
+                    logo: `${SITE_URL}/og-default.png`
+                  },
+                  {
+                    '@type': 'WebSite',
+                    '@id': `${SITE_URL}/#website`,
+                    name: BRAND_NAME,
+                    url: `${SITE_URL}/`,
+                    inLanguage: 'fr-FR',
+                    publisher: { '@id': `${SITE_URL}/#organization` }
+                  }
+                ]
+              }}
+            />
             <h2 id="why-title">Actes de vente et CERFA pour garages et particuliers</h2>
             <p>
               ActeDeVente.fr vous aide à produire un certificat de cession (CERFA 15776), un mandat
               d’immatriculation, une facture ou un contrat selon que le vendeur et l’acheteur sont
               professionnels ou particuliers.
+            </p>
+            <h3>Vous êtes un particulier ?</h3>
+            <p>
+              Le <Link to="/cerfa-15776">certificat de cession CERFA 15776</Link> est gratuit et sans inscription.
+              Imprimez-le en deux exemplaires, faites-le signer, puis déclarez la cession à l’ANTS dans les 15 jours.
+            </p>
+            <h3>Vous êtes un garage ou un marchand VO ?</h3>
+            <p>
+              Avec un compte, une seule saisie produit tout le dossier de vente :{' '}
+              <Link to="/facture-vente-vehicule-occasion">facture avec TVA sur marge</Link>,{' '}
+              <Link to="/contrat-vente-vehicule-occasion">contrat de vente</Link>, garantie commerciale,
+              bon de commande, PV de livraison et{' '}
+              <Link to="/mandat-immatriculation-cerfa-13757">mandat d’immatriculation</Link>.
             </p>
             <ul className="ac-seo-list">
               <li>

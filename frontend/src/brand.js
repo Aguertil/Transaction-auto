@@ -11,5 +11,5 @@ export const DEFAULT_SEO = {
   title: 'ActeDeVente.fr — CERFA 15776 & actes de vente auto en ligne',
   description:
     'Générez en ligne votre certificat de cession CERFA 15776, mandat d’immatriculation, facture et contrat de vente véhicule. Gratuit pour démarrer.',
-  ogImage: `${SITE_URL}/og-default.jpg`
+  ogImage: `${SITE_URL}/og-default.png`
 };
