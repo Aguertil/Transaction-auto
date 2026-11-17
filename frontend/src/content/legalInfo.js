@@ -1,6 +1,5 @@
 /**
  * Informations légales de l'éditeur (source : registre du commerce, Pappers).
- * ⚠️ Reste à renseigner : l'adresse e-mail de contact.
  * Ces valeurs alimentent /mentions-legales et /confidentialite.
  */
 export const LEGAL_INFO = {
@@ -11,10 +10,10 @@ export const LEGAL_INFO = {
   siren: 'SIREN 940 751 118 — RCS Thionville (SIRET du siège : 940 751 118 00016)',
   tva: 'FR51940751118',
   directeurPublication: 'Mohamed Baabouz, Président',
-  email: '[contact@actedevente.fr]',
+  email: 'mbauto057@gmail.com',
   // Durée de conservation des données saisies lors d'une génération sans compte
   conservationPublic: '24 mois, puis suppression automatique',
   // Durée de conservation après suppression du compte
-  conservationCompte: '[3 mois]',
+  conservationCompte: '6 mois',
   updated: '17 novembre 2026'
 };
