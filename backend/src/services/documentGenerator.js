@@ -296,6 +296,50 @@ function fillPdfText(form, fieldName, value, maxLen) {
 }
 
 /**
+ * Remplit un champ texte en réduisant la taille de police si le texte est
+ * trop long pour la case (évite les textes tronqués à l'impression).
+ */
+function fillPdfTextFit(form, fieldName, value, maxSize = 10, minSize = 6) {
+  try {
+    if (value === undefined || value === null) return false;
+    const s = String(value).trim();
+    if (!s) return false;
+    const field = form.getTextField(fieldName);
+    field.setText(s);
+    const widget = field.acroField.getWidgets()[0];
+    const width = widget ? widget.getRectangle().width : 0;
+    if (width > 0) {
+      // Largeur moyenne d'un caractère Helvetica ≈ 0,55 × taille de police
+      const size = Math.max(minSize, Math.min(maxSize, (width - 4) / (0.55 * s.length)));
+      field.setFontSize(Math.floor(size * 10) / 10);
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Sélectionne une option d'un groupe de boutons radio (sans erreur si absent). */
+function selectPdfRadio(form, fieldName, option) {
+  try {
+    form.getRadioGroup(fieldName).select(String(option));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Coche une case (sans erreur si absente). */
+function checkPdfBox(form, fieldName) {
+  try {
+    form.getCheckBox(fieldName).check();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Remplit les champs date Jour / Mois / Année d'un préfixe Acrobat.
  */
 function fillPdfDateParts(form, pagePrefix, baseName, dateString) {
@@ -335,27 +379,55 @@ function fillCerfaCessionPage(form, pageIndex, data) {
   fillPdfText(form, `${p}.txt_MarqueVéhicule[0]`, vehicule.marque);
   fillPdfText(form, `${p}.txt_TypeVarianteVersionVéhicule[0]`, vehicule.typeVarianteVersion || '');
   fillPdfText(form, `${p}.txt_GenreNational[0]`, vehicule.genreNational || '');
-  fillPdfText(
+  fillPdfTextFit(
     form,
     `${p}.txt_DénominationCommerciale[0]`,
     vehicule.denominationCommerciale || vehicule.modele
   );
   fillPdfText(form, `${p}.num_KilométrageCompteur[0]`, vehicule.kilometrage);
 
-  fillPdfText(form, `${p}.txt_IdentitéVendeur[0]`, partyDisplayName(societe));
+  // Certificat d'immatriculation présent (cas standard d'une vente)
+  selectPdfRadio(form, `${p}.Groupe_de_boutons_radio1[0]`, vehicule.certificatAbsent ? '2' : '1');
+  fillPdfText(form, `${p}.num_Formule[0]`, vehicule.numeroFormule);
+
+  // ——— Ancien propriétaire (vendeur) ———
+  // Groupe 3 : 1 = personne morale, 2 = personne physique
+  selectPdfRadio(form, `${p}.Groupe_de_boutons_radio3[0]`, isPro(societe) ? '1' : '2');
+  fillPdfTextFit(form, `${p}.txt_IdentitéVendeur[0]`, partyDisplayName(societe), 10);
   fillPdfText(form, `${p}.Num_Siret[0]`, partySiret(societe), 14);
-  fillPdfText(form, `${p}.txt_NomVoie[0]`, societe.adresse);
+  const adrV = parseAdresseFrancaise(societe.adresse);
+  fillPdfText(form, `${p}.num_VoieAdresse[0]`, adrV.numero);
+  fillPdfText(form, `${p}.txt_TypeVoieAdresse[0]`, adrV.typeVoie);
+  fillPdfTextFit(form, `${p}.txt_NomVoie[0]`, adrV.nomVoie || societe.adresse, 10);
   fillPdfText(form, `${p}.txt_CommuneAdresse[0]`, societe.ville);
   fillPdfText(form, `${p}.num_CodePostalAdresse[0]`, societe.codePostal, 5);
 
-  fillPdfText(form, `${p}.txt_IdentitéAcheteur[0]`, partyDisplayName(client));
-  fillPdfText(form, `${p}.txt_NomVoieAdresseAcheteur[0]`, client.adresse);
+  // Nature de la cession : 1 = céder, 2 = céder pour destruction
+  selectPdfRadio(form, `${p}.Groupe_de_boutons_radio4[0]`, vente.pourDestruction ? '2' : '1');
+  // Certifications standard du vendeur : certificat de situation
+  // administrative remis, pas de transformation notable
+  checkPdfBox(form, `${p}.ckb_ValidationDéclaration1[0]`);
+  checkPdfBox(form, `${p}.ckb_ValidationDéclaration2[0]`);
+  if (vente.pourDestruction) checkPdfBox(form, `${p}.ckb_ValidationDéclaration3[0]`);
+
+  // ——— Nouveau propriétaire (acheteur) ———
+  // Groupe 5 : 1 = personne morale, 2 = personne physique
+  selectPdfRadio(form, `${p}.Groupe_de_boutons_radio5[0]`, isPro(client) ? '1' : '2');
+  fillPdfTextFit(form, `${p}.txt_IdentitéAcheteur[0]`, partyDisplayName(client), 10);
+  fillPdfText(form, `${p}.num_SiretAcheteur[0]`, partySiret(client), 14);
+  const adrA = parseAdresseFrancaise(client.adresse);
+  fillPdfText(form, `${p}.num_VoieAdresseAcheteur[0]`, adrA.numero);
+  fillPdfText(form, `${p}.txt_TypeVoieAdresseAcheteur[0]`, adrA.typeVoie);
+  fillPdfTextFit(form, `${p}.txt_NomVoieAdresseAcheteur[0]`, adrA.nomVoie || client.adresse, 10);
   fillPdfText(form, `${p}.txt_CommuneAdresseAcheteur[0]`, client.ville);
   fillPdfText(form, `${p}.num_CodePostalAdresseAcheteur[0]`, client.codePostal, 5);
   if (isParticulier(client)) {
     fillPdfText(form, `${p}.txt_LieuNaissanceAcheteur[0]`, client.lieuNaissance);
     fillPdfBirthParts(form, p, client.dateNaissance);
   }
+  // Certifications standard de l'acheteur
+  checkPdfBox(form, `${p}.ckb_ValidationDéclarationA1[0]`);
+  checkPdfBox(form, `${p}.ckb_ValidationDéclarationA2[0]`);
 
   if (vente.dateVente) {
     fillPdfDateParts(form, p, 'num_DateVente', vente.dateVente);
@@ -449,7 +521,7 @@ async function generateCerfaMandat(data) {
 
     const identiteMandant = partyDisplayName(client);
     const identiteMandataire = partyDisplayName(societe);
-    const marqueModele = `${vehicule.marque || ''} ${vehicule.modele || ''}`.trim();
+    const marqueModele = `${vehicule.marque || ''} ${vehicule.denominationCommerciale || vehicule.modele || ''}`.trim();
     const natureOperation =
       vente.natureOperation ||
       data.options?.natureOperation ||
@@ -458,7 +530,10 @@ async function generateCerfaMandat(data) {
     // Mandant (acheteur)
     fillPdfText(form, `${p}.txt_IdentitéMandant[0]`, identiteMandant);
     fillPdfText(form, `${p}.num_SIRETMandant[0]`, partySiret(client), 14);
-    fillPdfText(form, `${p}.txt_NomVoieAdresse[0]`, client.adresse);
+    const adrMandant = parseAdresseFrancaise(client.adresse);
+    fillPdfText(form, `${p}.num_VoieAdresse[0]`, adrMandant.numero);
+    fillPdfText(form, `${p}.txt_TypeVoieAdresse[0]`, adrMandant.typeVoie);
+    fillPdfTextFit(form, `${p}.txt_NomVoieAdresse[0]`, adrMandant.nomVoie || client.adresse);
     fillPdfText(form, `${p}.num_CodePostalAdresse[0]`, client.codePostal, 5);
     fillPdfText(form, `${p}.txt_CommuneAdresse[0]`, client.ville);
     fillPdfText(form, `${p}.txt_PaysAdresse[0]`, client.pays || 'FRANCE');
@@ -469,7 +544,7 @@ async function generateCerfaMandat(data) {
 
     // Opération & véhicule
     fillPdfText(form, `${p}.txt_NatureOpération[0]`, natureOperation);
-    fillPdfText(form, `${p}.txt_MarqueVéhicule[0]`, marqueModele);
+    fillPdfTextFit(form, `${p}.txt_MarqueVéhicule[0]`, marqueModele);
     fillPdfText(form, `${p}.txt_MarqueImmatriculation[0]`, vehicule.immatriculation);
     fillPdfText(form, `${p}.txt_NumVinVéhicule[0]`, vehicule.vin, 17);
 
@@ -546,22 +621,25 @@ async function generateQuitusFiscal(data) {
     fill('a4', adrClient.numero);
     fill('a5', adrClient.typeVoie);
     fill('a6', adrClient.nomVoie || client.adresse);
-    fill('a7', client.codePostal, 5);
-    fill('a8', client.ville);
-    fill('a9', client.pays || 'FRANCE');
+    // a7 = complément d'adresse, a8 = code postal, a9 = ville
+    fill('a7', client.complementAdresse || '');
+    fill('a8', client.codePostal);
+    fill('a9', client.ville);
 
     // ——— 2. Vendeur domicilié dans un autre État membre UE ———
     fill('a10', vendeurUE.raisonSociale || vendeurUE.nom || '');
     fill('N°TVA', vendeurUE.numeroTVA || vendeurUE.tva || '');
-    fill('a11', vendeurUE.telephone || vendeurUE.email || '');
+    // a11 = pays du vendeur (le formulaire n'a pas de case téléphone)
+    fill('a11', vendeurUE.pays || '');
 
     const adrVendeur = parseAdresseFrancaise(vendeurUE.adresse || '');
     fill('a12', adrVendeur.numero);
     fill('a13', adrVendeur.typeVoie);
     fill('a14', adrVendeur.nomVoie || vendeurUE.adresse || '');
-    fill('a15', vendeurUE.codePostal || '', 5);
-    fill('a16', vendeurUE.ville || '');
-    fill('a17', vendeurUE.pays || '');
+    // a15 = complément d'adresse, a16 = code postal, a17 = ville
+    fill('a15', vendeurUE.complementAdresse || '');
+    fill('a16', vendeurUE.codePostal || '');
+    fill('a17', vendeurUE.ville || '');
 
     // ——— 3. Caractéristiques techniques du véhicule ———
     fill('a18', vehicule.marque); // A. Marque
@@ -570,12 +648,12 @@ async function generateQuitusFiscal(data) {
       vehicule.datePremiereImmat,
       vente.dateVente || vente.dateLivraison
     );
-    fill('a20', age, 6); // H. Âge en jours
+    fill('a25', age); // H. Âge du véhicule en jours
     fill('a21', vehicule.immatriculationEtrangere || vehicule.immatriculation); // D. Immat à l'étranger
     fill('a22', vehicule.vin, 17); // E. VIN
     fill('a23', formatDateDdMmYyyy(vehicule.datePremiereImmat), 10); // F. 1ère mise en circulation
     fill('a24', formatDateDdMmYyyy(vente.dateVente || vente.dateLivraison), 10); // G. Date livraison
-    fill('a25', vehicule.kilometrage); // C. Kilométrage
+    fill('a20', String(vehicule.kilometrage || '').replace(/\s/g, ''), 6); // C. Kilométrage
 
     // ——— 4. Prix d'achat / TVA ———
     const prix = vente.prixTTC || vente.prixHT || vente.montantAcquisition || '';
@@ -623,9 +701,13 @@ async function generateQuitusFiscal(data) {
     fill('b5', adrSte.numero);
     fill('b6', adrSte.typeVoie);
     fill('b7', adrSte.nomVoie || societe.adresse);
-    fill('b8', societe.codePostal, 5);
-    fill('b9', societe.ville);
-    fill('b10', societe.pays || 'FRANCE');
+    // b8 = complément d'adresse, b9 = code postal, b10 = ville / pays
+    fill('b8', societe.complementAdresse || '');
+    fill('b9', societe.codePostal);
+    fill('b10', societe.ville);
+
+    // Cadre signature : nom et prénom du déclarant (l'acquéreur)
+    fill('a30', nomAcheteur);
 
     console.log('✅ Quitus fiscal 1993-PART-D rempli');
   } catch (error) {
@@ -683,75 +765,98 @@ async function generateCerfa13750(data) {
 
     const basePath = 'topmostSubform[0].Page1[0]';
 
-    // Immatriculation actuelle
-    fillField(`${basePath}.Vehiculenumeroimmaactuel[0]`, data.vehicule.immatriculation || '');
+    const client = data.client || {};
+    const vehicule = data.vehicule || {};
+    const vente = data.vente || {};
 
-    // Nouveau format d'immatriculation (si applicable)
-    fillField(`${basePath}.Newformatimma[0]`, data.vehicule.immatriculation || '');
+    // Type de demande : certificat (changement de titulaire)
+    selectPdfRadio(form, `${basePath}.Certificat[0]`, '1');
 
-    // Marque
-    fillField(`${basePath}.Marque[0]`, data.vehicule.marque || '');
+    // ——— Véhicule ———
+    fillField(`${basePath}.Vehiculenumeroimmaactuel[0]`, vehicule.immatriculation || '');
+    // Numéro de formule du certificat actuel : uniquement s'il est connu
+    fillField(`${basePath}.Newformatimma[0]`, vehicule.numeroFormule || '');
+    fillField(`${basePath}.Marque[0]`, vehicule.marque || '');
+    fillPdfTextFit(form, `${basePath}.DenominationCommerciale[0]`, vehicule.denominationCommerciale || vehicule.modele || '');
+    fillPdfTextFit(form, `${basePath}.TypeVarianteVersion[0]`, vehicule.typeVarianteVersion || '');
+    fillField(`${basePath}.NumeroIdentificationVehicule[0]`, vehicule.vin || '');
+    fillField(`${basePath}.GenreNational[0]`, vehicule.genreNational || '');
 
-    // Dénomination commerciale
-    fillField(`${basePath}.DenominationCommerciale[0]`, data.vehicule.denominationCommerciale || data.vehicule.modele || '');
+    // Dates (cases JJMMAAAA) : Jour1 = date d'achat, Jour2 = date du
+    // certificat actuel (I), Jour3 = date de 1re immatriculation (B)
+    fillField(`${basePath}.Jour1[0]`, formatDateDdMmYyyyCompact(vente.dateVente));
+    if (vehicule.dateCertificat) {
+      fillField(`${basePath}.Jour2[0]`, formatDateDdMmYyyyCompact(vehicule.dateCertificat));
+    }
+    fillField(`${basePath}.Jour3[0]`, formatDateDdMmYyyyCompact(vehicule.datePremiereImmat));
 
-    // Type/Variante/Version
-    fillField(`${basePath}.TypeVarianteVersion[0]`, data.vehicule.typeVarianteVersion || data.vehicule.modele || '');
-
-    // Numéro d'identification véhicule (VIN)
-    fillField(`${basePath}.NumeroIdentificationVehicule[0]`, data.vehicule.vin || '');
-
-    // Genre national
-    fillField(`${basePath}.GenreNational[0]`, data.vehicule.genreNational || data.vehicule.modele || '');
-
-    // Couleur - cocher la case correspondante si disponible
-    if (data.vehicule.couleur) {
-      const couleurLower = data.vehicule.couleur.toLowerCase();
-      fillCheckbox(`${basePath}.blanc[0]`, couleurLower.includes('blanc'));
-      fillCheckbox(`${basePath}.gris[0]`, couleurLower.includes('gris'));
-      fillCheckbox(`${basePath}.beige[0]`, couleurLower.includes('beige'));
-      fillCheckbox(`${basePath}.bleu[0]`, couleurLower.includes('bleu'));
-      fillCheckbox(`${basePath}.vert[0]`, couleurLower.includes('vert'));
-      fillCheckbox(`${basePath}.jaune[0]`, couleurLower.includes('jaune'));
-      fillCheckbox(`${basePath}.orange[0]`, couleurLower.includes('orange'));
-      fillCheckbox(`${basePath}.rouge[0]`, couleurLower.includes('rouge'));
-      fillCheckbox(`${basePath}.marron[0]`, couleurLower.includes('marron'));
-      fillCheckbox(`${basePath}.noir[0]`, couleurLower.includes('noir'));
+    // Couleur dominante
+    if (vehicule.couleur) {
+      const c = vehicule.couleur.toLowerCase();
+      ['blanc', 'gris', 'beige', 'bleu', 'vert', 'jaune', 'orange', 'rouge', 'marron', 'noir'].forEach((nom) => {
+        if (c.includes(nom)) fillCheckbox(`${basePath}.${nom}[0]`, true);
+      });
+      if (c.includes('clair')) fillCheckbox(`${basePath}.clair[0]`, true);
+      if (c.includes('foncé') || c.includes('fonce')) fillCheckbox(`${basePath}.fonce[0]`, true);
     }
 
-    // Date 1re immatriculation (MEC) : Jour1 / Jour2 / Jour3 (cerfa-13750.pdf)
-    const mec = parseDateParts(data.vehicule.datePremiereImmat);
-    if (mec) {
-      fillField(`${basePath}.Jour1[0]`, mec.jour);
-      fillField(`${basePath}.Jour2[0]`, mec.mois);
-      fillField(`${basePath}.Jour3[0]`, mec.annee);
+    // ——— Titulaire (acheteur) ———
+    if (isPro(client)) {
+      selectPdfRadio(form, `${basePath}.Personne[0]`, 'PM');
+      fillPdfTextFit(form, `${basePath}.FamilyName[0]`, partyDisplayName(client));
+      const siren = partySiret(client).slice(0, 9);
+      fillField(`${basePath}.N_SIREN[0]`, siren);
+    } else {
+      selectPdfRadio(form, `${basePath}.Personne[0]`, 'PP');
+      // « NOM DE NAISSANCE et PRÉNOM » dans la même case ; le champ suivant
+      // est le nom d'usage (facultatif), laissé vide
+      const nomPrenom = [String(client.nom || '').trim().toUpperCase(), String(client.prenom || '').trim()]
+        .filter(Boolean)
+        .join(' ');
+      fillPdfTextFit(form, `${basePath}.FamilyName[0]`, nomPrenom);
+      fillField(`${basePath}.Name[0]`, client.nomUsage || '');
+      fillField(`${basePath}.Jour4[0]`, formatDateDdMmYyyyCompact(client.dateNaissance));
+      fillField(`${basePath}.CityName1[0]`, (client.lieuNaissance || '').trim());
+      fillField(`${basePath}.DPT[0]`, client.departementNaissance || '');
     }
 
-    // Naissance titulaire : Jour4 limité à 8 car. → JJMMAAAA sans séparateurs
-    const n = parseDateParts(data.client.dateNaissance);
-    if (n) {
-      fillField(`${basePath}.Jour4[0]`, formatDateDdMmYyyyCompact(data.client.dateNaissance));
-    }
-    fillField(`${basePath}.CityName1[0]`, (data.client.lieuNaissance || '').trim());
-
-    // Titulaire (personne physique) — champs anglais du formulaire officiel
-    fillField(`${basePath}.Name[0]`, isPro(data.client) ? '' : (data.client.prenom || '').trim());
-    fillField(`${basePath}.FamilyName[0]`, isPro(data.client)
-      ? partyDisplayName(data.client)
-      : (data.client.nom || '').trim());
-    fillField(`${basePath}.StreetName[0]`, (data.client.adresse || '').trim());
-    fillField(`${basePath}.Postcode[0]`, (data.client.codePostal || '').trim());
-    fillField(`${basePath}.CityName2[0]`, (data.client.ville || '').trim());
-    fillField(`${basePath}.DPT[0]`, departementFromCodePostal(data.client.codePostal));
-    fillField(`${basePath}.telPorTitulaire[0]`, (data.client.telephone || '').trim());
-    fillField(`${basePath}.mailTitulaire[0]`, (data.client.email || '').trim());
-    if (isPro(data.client) && partySiret(data.client)) {
+    // Domicile
+    const adr = parseAdresseFrancaise(client.adresse);
+    fillField(`${basePath}.BuildingNumber[0]`, adr.numero);
+    if (adr.typeVoie) {
       try {
-        fillField(`${basePath}.SIRET[0]`, partySiret(data.client));
+        const dd = form.getDropdown(`${basePath}.RoadType[0]`);
+        const wanted = adr.typeVoie.toLowerCase().replace(/^av\.?$/, 'avenue').replace(/^bd\.?$/, 'boulevard');
+        const opt = dd.getOptions().find((o) => o.toLowerCase() === wanted);
+        if (opt) dd.select(opt);
       } catch {
-        // champ optionnel selon version CERFA
+        // liste absente
       }
     }
+    const typeConnu = (() => {
+      try {
+        const wanted = (adr.typeVoie || '').toLowerCase().replace(/^av\.?$/, 'avenue').replace(/^bd\.?$/, 'boulevard');
+        return form.getDropdown(`${basePath}.RoadType[0]`).getOptions().some((o) => o.toLowerCase() === wanted);
+      } catch {
+        return false;
+      }
+    })();
+    // Si le type de voie n'est pas dans la liste officielle, il reste dans le libellé
+    fillPdfTextFit(
+      form,
+      `${basePath}.StreetName[0]`,
+      typeConnu ? adr.nomVoie : [adr.typeVoie, adr.nomVoie].filter(Boolean).join(' ') || client.adresse || ''
+    );
+    fillField(`${basePath}.Postcode[0]`, (client.codePostal || '').trim());
+    fillField(`${basePath}.CityName2[0]`, (client.ville || '').trim());
+    fillField(`${basePath}.telPorTitulaire[0]`, (client.telephone || '').trim());
+    fillPdfTextFit(form, `${basePath}.mailTitulaire[0]`, (client.email || '').trim());
+
+    // Signature du titulaire : lieu et date
+    fillField(`${basePath}.FaitATitulaire[0]`, getLieuSignature(data));
+    // Case limitée à 8 caractères : JJ/MM/AA
+    const sig = parseDateParts(getDateSignature(data));
+    if (sig) fillField(`${basePath}.LeTitulaire[0]`, `${sig.jour}/${sig.mois}/${sig.annee.slice(2)}`);
 
     // Flatten seulement si l'option editable n'est pas activée
     if (!data.options?.editable) {
@@ -869,12 +974,14 @@ function generateBDCMB(data) {
     doc.moveDown(0.4);
     doc.fontSize(10).fillColor('#000000');
     doc.font('Helvetica-Bold').fontSize(12);
-    doc.text(`Prix TTC : ${formatPrix(vente.prixTTC)} €`);
+    doc.text(`${isPro(societe) ? 'Prix TTC' : 'Prix de vente'} : ${formatPrix(vente.prixTTC)} €`);
     doc.font('Helvetica').fontSize(10);
     doc.moveDown(0.3);
     doc.text(`Mode de paiement : ${vente.modePaiement || 'Non précisé'}`);
     doc.text(
-      'Régime particulier des biens d\'occasion — TVA sur marge (art. 297 A du CGI), non déductible par l\'acquéreur.'
+      isPro(societe)
+        ? 'Régime particulier des biens d\'occasion — TVA sur marge (art. 297 A du CGI), non déductible par l\'acquéreur.'
+        : 'Vente entre particuliers, non soumise à la TVA.'
     );
     doc.moveDown(0.7);
 
@@ -898,15 +1005,201 @@ function generateBDCMB(data) {
     );
     doc.moveDown(1.5);
 
-    const ySig = doc.y;
-    doc.text('Le Vendeur', 50, ySig);
-    doc.text('_________________________', 50, ySig + 40);
-    doc.fontSize(9).text(societe.raisonSociale || '', 50, ySig + 58);
+    drawSignatureBlock(
+      doc,
+      { title: 'Le Vendeur', name: partyDisplayName(societe) },
+      { title: 'L\'Acheteur', subtitle: '(lu et approuvé)', name: partyDisplayName(client) }
+    );
 
-    doc.fontSize(10).text('L\'Acheteur', 320, ySig);
-    doc.text('(lu et approuvé)', 320, ySig + 14);
-    doc.text('_________________________', 320, ySig + 40);
-    doc.fontSize(9).text(`${client.prenom || ''} ${client.nom || ''}`.trim(), 320, ySig + 58);
+    doc.end();
+  });
+}
+
+/**
+ * Bloc de signatures sur deux colonnes, positionné en absolu pour que
+ * l'intitulé, la ligne et le nom restent alignés (et sur la même page).
+ * left / right : { title, subtitle?, name }
+ */
+function drawSignatureBlock(doc, left, right) {
+  const needed = 90;
+  if (doc.y + needed > doc.page.height - doc.page.margins.bottom) doc.addPage();
+  const y = doc.y;
+  const cols = [
+    [left, doc.page.margins.left],
+    [right, 320]
+  ];
+  doc.fontSize(10).fillColor('#000000').font('Helvetica');
+  cols.forEach(([c, x]) => {
+    if (!c) return;
+    doc.text(c.title || '', x, y, { width: 220, lineBreak: false });
+    if (c.subtitle) doc.fontSize(9).text(c.subtitle, x, y + 13, { width: 220, lineBreak: false }).fontSize(10);
+    doc.moveTo(x, y + 58).lineTo(x + 190, y + 58).strokeColor('#000000').lineWidth(0.5).stroke();
+    doc.fontSize(9).text(c.name || '', x, y + 63, { width: 220, lineBreak: false }).fontSize(10);
+  });
+  doc.x = doc.page.margins.left;
+  doc.y = y + needed;
+}
+
+/** Ligne avec une case à cocher dessinée (les polices standard n'ont pas « ☐ »). */
+function checkboxLine(doc, label) {
+  const x = doc.page.margins.left;
+  const y = doc.y;
+  doc.rect(x, y + 1.5, 8, 8).lineWidth(0.7).strokeColor('#000000').stroke();
+  doc.text(label, x + 14, y);
+  doc.x = x;
+}
+
+/**
+ * Facture (vendeur professionnel) ou attestation de vente (vendeur particulier).
+ * Régime par défaut d'un professionnel : TVA sur la marge (biens d'occasion),
+ * la TVA n'apparaît pas sur la facture. vente.regimeTVA = 'normal' pour une
+ * facture avec TVA 20 % sur le prix total.
+ */
+function generateFactureDocument(data) {
+  return new Promise((resolve, reject) => {
+    const doc = new PDFKitDoc({ margin: 50, size: 'A4' });
+    const buffers = [];
+    doc.on('data', buffers.push.bind(buffers));
+    doc.on('end', () => resolve(Buffer.concat(buffers)));
+    doc.on('error', reject);
+
+    const societe = data.societe || {};
+    const client = data.client || {};
+    const vehicule = data.vehicule || {};
+    const vente = data.vente || {};
+    const vendeurPro = isPro(societe);
+    const regimeNormal = vendeurPro && vente.regimeTVA === 'normal';
+    const prix = parseFloat(String(vente.prixTTC ?? '').replace(/\s/g, '').replace(',', '.'));
+    const prixOk = !Number.isNaN(prix);
+    const dateDoc = formatDateFR(vente.dateVente || getDateSignature(data));
+    const numero = vente.numeroFacture || `${vendeurPro ? 'F' : 'AV'}-${new Date().getFullYear()}-${String(Date.now()).slice(-5)}`;
+    const blue = '#1a365d';
+    const L = doc.page.margins.left;
+    const W = doc.page.width - doc.page.margins.left - doc.page.margins.right;
+
+    const section = (title) => {
+      doc.moveDown(0.6);
+      doc.fontSize(11).fillColor(blue).font('Helvetica-Bold').text(title, L);
+      doc.moveTo(L, doc.y + 2).lineTo(L + W, doc.y + 2).strokeColor('#cccccc').lineWidth(0.5).stroke();
+      doc.moveDown(0.5);
+      doc.fontSize(10).fillColor('#000000').font('Helvetica');
+    };
+
+    // En-tête
+    doc.fontSize(22).fillColor(blue).font('Helvetica-Bold')
+      .text(vendeurPro ? 'FACTURE' : 'ATTESTATION DE VENTE', L, 50);
+    doc.fontSize(10).fillColor('#444444').font('Helvetica');
+    doc.text(`N° ${numero}`, L, 54, { width: W, align: 'right' });
+    doc.text(`Date : ${dateDoc}`, L, 68, { width: W, align: 'right' });
+    doc.y = 100;
+
+    // Parties côte à côte
+    const yParties = doc.y;
+    const colW = W / 2 - 10;
+    const block = (title, party, x) => {
+      doc.fontSize(9).fillColor('#666666').font('Helvetica-Bold').text(title, x, yParties, { width: colW });
+      doc.fontSize(10).fillColor('#000000').font('Helvetica-Bold').text(partyDisplayName(party), x, doc.y + 2, { width: colW });
+      doc.font('Helvetica');
+      const lines = [
+        isPro(party) && partySiret(party) ? `SIRET : ${partySiret(party)}` : '',
+        isPro(party) && (party.numeroTVA || party.tva) ? `N° TVA : ${party.numeroTVA || party.tva}` : '',
+        party.adresse || '',
+        `${party.codePostal || ''} ${party.ville || ''}`.trim(),
+        party.telephone ? `Tél. : ${party.telephone}` : '',
+        party.email || ''
+      ].filter(Boolean);
+      lines.forEach((l) => doc.text(l, x, doc.y, { width: colW }));
+      return doc.y;
+    };
+    const y1 = block('VENDEUR', societe, L);
+    const y2 = block(vendeurPro ? 'CLIENT' : 'ACHETEUR', client, L + W / 2 + 10);
+    doc.x = L;
+    doc.y = Math.max(y1, y2) + 10;
+
+    // Désignation
+    section('DÉSIGNATION');
+    const yHead = doc.y;
+    doc.font('Helvetica-Bold').fontSize(9).fillColor('#444444');
+    doc.text('Description', L, yHead, { width: W - 120 });
+    doc.text('Montant', L + W - 110, yHead, { width: 110, align: 'right' });
+    doc.moveTo(L, doc.y + 2).lineTo(L + W, doc.y + 2).strokeColor('#cccccc').stroke();
+    doc.moveDown(0.5);
+    doc.font('Helvetica').fontSize(10).fillColor('#000000');
+    const yRow = doc.y;
+    const titre = ['Véhicule d\'occasion', vehicule.marque, vehicule.denominationCommerciale || vehicule.modele]
+      .filter(Boolean).join(' ');
+    doc.font('Helvetica-Bold').text(titre, L, yRow, { width: W - 120 });
+    doc.font('Helvetica').fontSize(9);
+    [
+      vehicule.immatriculation ? `Immatriculation : ${vehicule.immatriculation}` : '',
+      vehicule.vin ? `N° de série (VIN) : ${vehicule.vin}` : '',
+      vehicule.datePremiereImmat ? `1re mise en circulation : ${formatDateFR(vehicule.datePremiereImmat)}` : '',
+      vehicule.kilometrage ? `Kilométrage : ${vehicule.kilometrage} km` : '',
+      vehicule.couleur ? `Couleur : ${vehicule.couleur}` : ''
+    ].filter(Boolean).forEach((l) => doc.text(l, L, doc.y, { width: W - 120 }));
+    const yFinDetails = doc.y;
+    const montantLigne = regimeNormal && prixOk ? prix / 1.2 : prix;
+    doc.fontSize(10).text(prixOk ? `${formatPrix(montantLigne)} €` : '', L + W - 110, yRow, { width: 110, align: 'right' });
+    doc.x = L;
+    doc.y = Math.max(yFinDetails, yRow + 14) + 6;
+    doc.moveTo(L, doc.y).lineTo(L + W, doc.y).strokeColor('#cccccc').stroke();
+    doc.moveDown(0.6);
+
+    // Totaux
+    const total = (label, value, bold) => {
+      const y = doc.y;
+      doc.font(bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(bold ? 12 : 10);
+      doc.text(label, L + W - 300, y, { width: 180, align: 'right' });
+      doc.text(value, L + W - 110, y, { width: 110, align: 'right' });
+      doc.moveDown(0.3);
+    };
+    if (prixOk) {
+      if (regimeNormal) {
+        total('Total HT', `${formatPrix(prix / 1.2)} €`);
+        total('TVA 20 %', `${formatPrix(prix - prix / 1.2)} €`);
+        total('Total TTC', `${formatPrix(prix)} €`, true);
+      } else {
+        total(vendeurPro ? 'Total à payer' : 'Prix de vente', `${formatPrix(prix)} €`, true);
+      }
+    }
+    doc.font('Helvetica').fontSize(9).fillColor('#000000');
+    doc.x = L;
+    doc.moveDown(0.5);
+    if (!vendeurPro) {
+      doc.text('Vente entre particuliers, non soumise à la TVA.', L, doc.y, { width: W });
+    } else if (!regimeNormal) {
+      doc.text(
+        'Régime particulier – Biens d\'occasion (articles 297 A du CGI et 242 nonies A de l\'annexe II au CGI). ' +
+          'TVA calculée sur la marge, non mentionnée sur la facture et non récupérable par l\'acquéreur.',
+        L, doc.y, { width: W }
+      );
+    }
+
+    // Paiement
+    section('PAIEMENT');
+    doc.text(`Mode de paiement : ${vente.modePaiement || 'Non précisé'}`);
+    doc.text(`Date de la vente : ${formatDateFR(vente.dateVente) || dateDoc}`);
+    if (vendeurPro && isPro(client)) {
+      doc.moveDown(0.3).fontSize(8).fillColor('#444444').text(
+        'En cas de retard de paiement : pénalités au taux d\'intérêt appliqué par la BCE majoré de 10 points, ' +
+          'et indemnité forfaitaire pour frais de recouvrement de 40 € (art. L. 441-10 du Code de commerce). ' +
+          'Pas d\'escompte pour paiement anticipé.',
+        { width: W }
+      );
+      doc.fontSize(10).fillColor('#000000');
+    }
+
+    if (!vendeurPro) {
+      doc.moveDown(1.2);
+      const lieuSig = getLieuSignature(data);
+      doc.text(lieuSig ? `Fait à ${lieuSig}, le ${formatDateFR(getDateSignature(data))}` : `Fait le ${formatDateFR(getDateSignature(data))}`, { align: 'center' });
+      doc.moveDown(1);
+      drawSignatureBlock(
+        doc,
+        { title: 'Le vendeur', name: partyDisplayName(societe) },
+        { title: 'L\'acheteur', name: partyDisplayName(client) }
+      );
+    }
 
     doc.end();
   });
@@ -918,32 +1211,9 @@ function generateBDCMB(data) {
  * Conforme à l'article 297 A du CGI (TVA sur marge)
  */
 async function generateFacture(data) {
-  // Chercher un fichier PDF de facture dans le dossier CERFA
-  const facturePatterns = ['facture', 'invoice', 'fact'];
-  let facturePath = null;
-  
-  try {
-    const cerfaFiles = fs.readdirSync(CERFA_DIR);
-    for (const file of cerfaFiles) {
-      if (file.toLowerCase().endsWith('.pdf') && !file.startsWith('.')) {
-        const fileLower = file.toLowerCase();
-        if (facturePatterns.some(pattern => fileLower.includes(pattern))) {
-          facturePath = path.join(CERFA_DIR, file);
-          break;
-        }
-      }
-    }
-  } catch (error) {
-    console.warn('Erreur lors de la recherche du fichier facture:', error);
-  }
-
-  // Si un fichier PDF remplissable est trouvé, l'utiliser
-  if (facturePath && fs.existsSync(facturePath)) {
-    return await generateFactureFromPDF(facturePath, data);
-  }
-
-  // Sinon, générer avec PDFKit (méthode originale)
-  return generateFactureWithPDFKit(data);
+  // Le modèle Facture.pdf n'a ni prix ni mentions de TVA : la facture est
+  // construite entièrement ici, avec les mentions obligatoires.
+  return generateFactureDocument(data);
 }
 
 /**
@@ -1203,7 +1473,7 @@ function generateFactureWithPDFKit(data) {
     doc.text(`Modèle: ${data.vehicule.modele}`);
     doc.text(`Immatriculation: ${data.vehicule.immatriculation}`);
     doc.text(`N° de série (VIN): ${data.vehicule.vin}`);
-    doc.text(`Date de première immatriculation: ${data.vehicule.datePremiereImmat}`);
+    doc.text(`Date de première immatriculation: ${formatDateFR(data.vehicule.datePremiereImmat)}`);
     doc.text(`Kilométrage: ${data.vehicule.kilometrage} km`);
     if (data.vehicule.couleur) doc.text(`Couleur: ${data.vehicule.couleur}`);
     doc.moveDown();
@@ -1289,7 +1559,7 @@ function generateContratVente(data) {
     doc.text(`Modèle: ${data.vehicule.modele}`);
     doc.text(`Immatriculation: ${data.vehicule.immatriculation}`);
     doc.text(`N° de série (VIN): ${data.vehicule.vin}`);
-    doc.text(`Date de première immatriculation: ${data.vehicule.datePremiereImmat}`);
+    doc.text(`Date de première immatriculation: ${formatDateFR(data.vehicule.datePremiereImmat)}`);
     doc.text(`Kilométrage déclaré: ${data.vehicule.kilometrage} km`);
     doc.moveDown(0.9); // Réduction de 10% (1 -> 0.9)
 
@@ -1297,7 +1567,7 @@ function generateContratVente(data) {
     doc.fontSize(11).text('ARTICLE 2 - PRIX', { underline: true });
     doc.moveDown(0.45); // Réduction de 10% (0.5 -> 0.45)
     doc.fontSize(10);
-    doc.text(`Le prix de vente est fixé à la somme de ${formatPrix(data.vente.prixTTC)} € TTC.`);
+    doc.text(`Le prix de vente est fixé à la somme de ${formatPrix(data.vente.prixTTC)} €${isPro(data.societe) ? ' TTC' : ''}.`);
     doc.text(`Paiement: ${data.vente.modePaiement || 'Non spécifié'}`);
     doc.moveDown(0.9); // Réduction de 10% (1 -> 0.9)
 
@@ -1354,15 +1624,12 @@ function generateContratVente(data) {
       lieuSig ? `à ${lieuSig}, le ${dateSig}` : `le ${dateSig}`,
       { align: 'center' }
     );
-    doc.moveDown(1.8); // Réduction de 10% (2 -> 1.8)
-    
-    doc.text('Le Vendeur', 50, doc.y);
-    doc.text('___________________', 50, doc.y + 20);
-    doc.text(`${partyDisplayName(data.societe)}`, 50, doc.y + 40);
-    
-    doc.text('L\'Acheteur', 350, doc.y - 60);
-    doc.text('___________________', 350, doc.y + 20);
-    doc.text(`${partyDisplayName(data.client)}`, 350, doc.y + 20);
+    doc.moveDown(1.5);
+    drawSignatureBlock(
+      doc,
+      { title: 'Le Vendeur', name: partyDisplayName(data.societe) },
+      { title: 'L\'Acheteur', subtitle: '(lu et approuvé)', name: partyDisplayName(data.client) }
+    );
 
     doc.end();
   });
@@ -1662,14 +1929,11 @@ function generateGarantieWithPDFKit(data) {
     );
     doc.moveDown(1);
     
-    doc.fontSize(10);
-    doc.text('Le Vendeur', 50, doc.y);
-    doc.text('___________________', 50, doc.y + 18);
-    doc.text(`${data.societe.raisonSociale}`, 50, doc.y + 35);
-    
-    doc.text('Le Client', 350, doc.y - 53);
-    doc.text('___________________', 350, doc.y - 35);
-    doc.text(`${data.client.prenom} ${data.client.nom}`, 350, doc.y - 18);
+    drawSignatureBlock(
+      doc,
+      { title: 'Le Vendeur', name: partyDisplayName(data.societe) },
+      { title: 'Le Client', name: partyDisplayName(data.client) }
+    );
 
     // ========== PAGE 2 : DÉTAILS DE LA GARANTIE ==========
     doc.addPage();
@@ -1907,25 +2171,25 @@ function generatePVLivraison(data) {
     doc.fontSize(12).text('ÉTAT DU VÉHICULE:', { underline: true });
     doc.fontSize(10);
     doc.text('Le véhicule est livré avec les équipements suivants:');
-    doc.text('☐ Clés de contact');
-    doc.text('☐ Carte grise');
-    doc.text('☐ Carnet d\'entretien');
-    doc.text('☐ Double des clés');
-    doc.text('☐ Kit de sécurité');
+    checkboxLine(doc, 'Clés de contact');
+    checkboxLine(doc, 'Carte grise');
+    checkboxLine(doc, 'Carnet d\'entretien');
+    checkboxLine(doc, 'Double des clés');
+    checkboxLine(doc, 'Kit de sécurité');
     doc.moveDown();
 
     doc.text('État extérieur:');
-    doc.text('☐ Excellent');
-    doc.text('☐ Bon');
-    doc.text('☐ Moyen');
-    doc.text('☐ À noter: ________________________________');
+    checkboxLine(doc, 'Excellent');
+    checkboxLine(doc, 'Bon');
+    checkboxLine(doc, 'Moyen');
+    checkboxLine(doc, 'À noter: ________________________________');
     doc.moveDown();
 
     doc.text('État intérieur:');
-    doc.text('☐ Excellent');
-    doc.text('☐ Bon');
-    doc.text('☐ Moyen');
-    doc.text('☐ À noter: ________________________________');
+    checkboxLine(doc, 'Excellent');
+    checkboxLine(doc, 'Bon');
+    checkboxLine(doc, 'Moyen');
+    checkboxLine(doc, 'À noter: ________________________________');
     doc.moveDown();
 
     doc.fontSize(12).text('RÉCEPTION:', { underline: true });
@@ -1941,13 +2205,11 @@ function generatePVLivraison(data) {
     );
     doc.moveDown(2);
 
-    doc.text('Signature du vendeur:', 50, doc.y);
-    doc.text('___________________', 50, doc.y + 20);
-    doc.text(`${partyDisplayName(data.societe)}`, 50, doc.y + 40);
-    
-    doc.text('Signature de l\'acheteur:', 350, doc.y - 60);
-    doc.text('___________________', 350, doc.y - 40);
-    doc.text(`${data.client.prenom} ${data.client.nom}`, 350, doc.y - 20);
+    drawSignatureBlock(
+      doc,
+      { title: 'Signature du vendeur', name: partyDisplayName(data.societe) },
+      { title: 'Signature de l\'acheteur', name: partyDisplayName(data.client) }
+    );
 
     doc.end();
   });
