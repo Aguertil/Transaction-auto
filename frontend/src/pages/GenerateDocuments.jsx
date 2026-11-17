@@ -6,6 +6,9 @@ import { BRAND_NAME } from '../brand';
 import PartyTypeToggle from '../components/PartyTypeToggle';
 import './GenerateDocuments.css';
 
+// Documents de garantie : réservés aux vendeurs professionnels
+const PRO_ONLY_DOCS = ['garantie', 'notice'];
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 function todayLocalISO() {
@@ -297,7 +300,18 @@ export default function GenerateDocuments() {
         ? `${API_URL}/api/documents/generate`
         : `${API_URL}/api/documents/public/generate`;
 
-      const response = await axios.post(endpoint, formData, {
+      const isProSeller = formData.societe.type === 'pro';
+      const payload = isProSeller
+        ? formData
+        : {
+            ...formData,
+            options: {
+              ...formData.options,
+              selectedDocuments: formData.options.selectedDocuments.filter((t) => !PRO_ONLY_DOCS.includes(t))
+            }
+          };
+
+      const response = await axios.post(endpoint, payload, {
         responseType: 'blob'
       });
 
@@ -318,6 +332,9 @@ export default function GenerateDocuments() {
   };
 
   const allDocuments = [...availableDocs.free, ...availableDocs.premium];
+  const effectiveDocCount = formData.options.selectedDocuments.filter(
+    (t) => formData.societe.type === 'pro' || !PRO_ONLY_DOCS.includes(t)
+  ).length;
 
   return (
     <div className="generate-container">
@@ -398,18 +415,27 @@ export default function GenerateDocuments() {
           <section className="form-section">
             <h3>Documents à générer</h3>
             <div className="documents-selector">
-              {allDocuments.map(doc => (
-                <label key={doc.type} className={`doc-checkbox ${!doc.available ? 'disabled' : ''}`}>
-                  <input
-                    type="checkbox"
-                    checked={formData.options.selectedDocuments.includes(doc.type)}
-                    onChange={() => toggleDocument(doc.type)}
-                    disabled={!doc.available}
-                  />
-                  <span>{doc.label}</span>
-                  {!doc.available && <span className="lock-icon">🔒</span>}
-                </label>
-              ))}
+              {allDocuments.map(doc => {
+                const proOnlyBlocked = formData.societe.type !== 'pro' && PRO_ONLY_DOCS.includes(doc.type);
+                const disabled = !doc.available || proOnlyBlocked;
+                return (
+                  <label
+                    key={doc.type}
+                    className={`doc-checkbox ${disabled ? 'disabled' : ''}`}
+                    title={proOnlyBlocked ? 'Réservé aux vendeurs professionnels' : undefined}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={!proOnlyBlocked && formData.options.selectedDocuments.includes(doc.type)}
+                      onChange={() => toggleDocument(doc.type)}
+                      disabled={disabled}
+                    />
+                    <span>{doc.label}</span>
+                    {proOnlyBlocked && <span className="doc-pro-only"> — vendeur professionnel uniquement</span>}
+                    {!doc.available && <span className="lock-icon">🔒</span>}
+                  </label>
+                );
+              })}
             </div>
             <div className="form-option">
               <label>
@@ -791,8 +817,8 @@ export default function GenerateDocuments() {
 
           {error && <div className="error-message">{error}</div>}
 
-          <button type="submit" disabled={loading || formData.options.selectedDocuments.length === 0} className="btn-generate">
-            {loading ? 'Génération...' : `Générer ${formData.options.selectedDocuments.length} document(s)`}
+          <button type="submit" disabled={loading || effectiveDocCount === 0} className="btn-generate">
+            {loading ? 'Génération...' : `Générer ${effectiveDocCount} document(s)`}
           </button>
         </form>
       </main>

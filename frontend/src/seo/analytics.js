@@ -16,8 +16,31 @@ function getGaId() {
   return '';
 }
 
+const CONSENT_KEY = 'adv_cookie_consent';
+
+/** 'granted' | 'denied' | null (pas encore de choix) */
+export function getConsent() {
+  if (typeof window === 'undefined') return null;
+  try {
+    return window.localStorage.getItem(CONSENT_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setConsent(value) {
+  try {
+    window.localStorage.setItem(CONSENT_KEY, value);
+  } catch {
+    /* stockage indisponible : le choix vaut pour la session */
+  }
+  window.dispatchEvent(new CustomEvent('adv-consent', { detail: value }));
+}
+
+/** GA4 n'est chargé qu'après accord explicite (RGPD / CNIL). */
 export function initAnalytics() {
   if (typeof window === 'undefined') return;
+  if (getConsent() !== 'granted') return;
   const GA_ID = getGaId();
   if (!GA_ID) {
     if (import.meta.env.DEV) {

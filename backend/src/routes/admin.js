@@ -175,6 +175,8 @@ router.delete('/users/:userId', async (req, res) => {
     }
 
     await User.findByIdAndDelete(userId);
+    // Documents conservés 6 mois puis effacés automatiquement (index TTL)
+    await Document.updateMany({ userId: user._id }, { $set: { accountDeletedAt: new Date() } });
 
     res.json({ message: 'Utilisateur supprimé avec succès' });
   } catch (error) {

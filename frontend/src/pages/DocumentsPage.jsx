@@ -5,12 +5,12 @@ import { usePageMeta } from '../seo/usePageMeta';
 import '../components/SiteChrome.css';
 
 const DOCS = [
-  { name: 'Certificat de cession CERFA 15776', free: true },
-  { name: 'Mandat d’immatriculation CERFA 13757', free: false },
+  { name: 'Certificat de cession CERFA 15776', free: true, to: '/cerfa-15776' },
+  { name: 'Mandat d’immatriculation CERFA 13757', free: false, to: '/mandat-immatriculation-cerfa-13757' },
   { name: 'Formulaire immatriculation CERFA 13750', free: false },
   { name: 'Bon de commande', free: false },
-  { name: 'Facture de vente', free: false },
-  { name: 'Contrat de vente', free: false },
+  { name: 'Facture de vente', free: false, to: '/facture-vente-vehicule-occasion' },
+  { name: 'Contrat de vente', free: false, to: '/contrat-vente-vehicule-occasion' },
   { name: 'Contrat de garantie', free: false },
   { name: 'PV de livraison', free: false },
   { name: 'Quitus fiscal 1993-PART-D', free: false }
@@ -47,7 +47,7 @@ export default function DocumentsPage() {
         <ul>
           {DOCS.map((doc) => (
             <li key={doc.name}>
-              <strong>{doc.name}</strong>
+              <strong>{doc.to ? <Link to={doc.to}>{doc.name}</Link> : doc.name}</strong>
               {doc.free ? ' — accessible sans compte' : ' — avec compte gratuit'}
             </li>
           ))}

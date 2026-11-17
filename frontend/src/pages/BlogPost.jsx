@@ -1,5 +1,6 @@
 import React from 'react';
-import { Link, useParams, Navigate } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
+import NotFound from './NotFound';
 import SiteHeader, { SiteFooter } from '../components/SiteChrome';
 import { usePageMeta } from '../seo/usePageMeta';
 import { getPostBySlug, blogPosts } from '../content/blogPosts';
@@ -44,7 +45,7 @@ export default function BlogPost() {
   });
 
   if (!post) {
-    return <Navigate to="/blog" replace />;
+    return <NotFound />;
   }
 
   const jsonLd = {
@@ -54,7 +55,8 @@ export default function BlogPost() {
     description: post.description,
     datePublished: post.date,
     author: { '@type': 'Organization', name: 'ActeDeVente.fr' },
-    publisher: { '@type': 'Organization', name: 'ActeDeVente.fr' },
+    dateModified: post.updated || post.date,
+    publisher: { '@type': 'Organization', name: 'ActeDeVente.fr', url: SITE_URL },
     mainEntityOfPage: `${SITE_URL}/blog/${post.slug}`
   };
 

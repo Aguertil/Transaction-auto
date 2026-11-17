@@ -132,6 +132,9 @@ function findCerfaFile(baseName) {
 /**
  * Génère tous les documents et les retourne dans un ZIP
  */
+/** Documents de garantie : uniquement si le vendeur est un professionnel. */
+export const PRO_ONLY_DOCUMENTS = ['garantie', 'notice'];
+
 export async function generateAllDocuments(data) {
   const archive = archiver('zip', { zlib: { level: 9 } });
   const buffers = [];
@@ -207,7 +210,14 @@ export async function generateAllDocuments(data) {
   console.log(`📦 Documents à générer: ${selectedDocuments.length} sur ${allDocuments.length} disponibles`);
   console.log(`   Types sélectionnés:`, selectedDocuments.map(d => d.type).join(', '));
 
-  const documents = selectedDocuments;
+  // Les documents de garantie engagent le vendeur : réservés aux professionnels
+  const documents = selectedDocuments.filter((doc) => {
+    if (PRO_ONLY_DOCUMENTS.includes(doc.type) && !isPro(data.societe)) {
+      console.log(`⏭️  ${doc.type} ignoré : vendeur particulier`);
+      return false;
+    }
+    return true;
+  });
 
   // Génération de chaque document
   console.log(`📄 Génération de ${documents.length} document(s) sélectionné(s):`, documents.map(d => d.type).join(', '));
@@ -240,6 +250,9 @@ export async function generateAllDocuments(data) {
  * Génère un document spécifique
  */
 export async function generateSingleDocument(type, data) {
+  if (PRO_ONLY_DOCUMENTS.includes(type) && !isPro(data.societe)) {
+    throw new Error('Les documents de garantie sont réservés aux vendeurs professionnels.');
+  }
   switch (type) {
     case 'cerfa-cession':
       return await generateCerfaCession(data);
@@ -1301,10 +1314,19 @@ function generateContratVente(data) {
     doc.fontSize(11).text('ARTICLE 4 - GARANTIES', { underline: true });
     doc.moveDown(0.45); // Réduction de 10% (0.5 -> 0.45)
     doc.fontSize(10);
-    doc.text('Le véhicule bénéficie de la garantie légale de conformité de 12 mois');
-    doc.text('(articles L. 217-4 à L. 217-14 du Code de la consommation).');
-    doc.text('En complément, une garantie commerciale de 3 mois est accordée (voir');
-    doc.text('contrat de garantie séparé).');
+    if (isPro(data.societe)) {
+      doc.text('Le véhicule bénéficie de la garantie légale de conformité de 12 mois');
+      doc.text('(articles L. 217-4 à L. 217-14 du Code de la consommation).');
+      doc.text('En complément, une garantie commerciale de 3 mois est accordée (voir');
+      doc.text('contrat de garantie séparé).');
+    } else {
+      // Vendeur particulier : ni garantie légale de conformité, ni garantie commerciale
+      doc.text('Le vendeur, agissant en qualité de particulier, ne consent aucune');
+      doc.text('garantie commerciale.');
+      doc.text('Le vendeur reste tenu de la garantie des vices cachés (articles 1641 et');
+      doc.text('suivants du Code civil). Il déclare avoir informé l\'acheteur de tous les');
+      doc.text('défauts dont il a connaissance.');
+    }
     doc.moveDown(0.9); // Réduction de 10% (1 -> 0.9)
 
     // Article 5 - Livraison
@@ -1336,11 +1358,11 @@ function generateContratVente(data) {
     
     doc.text('Le Vendeur', 50, doc.y);
     doc.text('___________________', 50, doc.y + 20);
-    doc.text(`${data.societe.raisonSociale}`, 50, doc.y + 40);
+    doc.text(`${partyDisplayName(data.societe)}`, 50, doc.y + 40);
     
     doc.text('L\'Acheteur', 350, doc.y - 60);
     doc.text('___________________', 350, doc.y + 20);
-    doc.text(`${data.client.prenom} ${data.client.nom}`, 350, doc.y + 20);
+    doc.text(`${partyDisplayName(data.client)}`, 350, doc.y + 20);
 
     doc.end();
   });
@@ -1921,7 +1943,7 @@ function generatePVLivraison(data) {
 
     doc.text('Signature du vendeur:', 50, doc.y);
     doc.text('___________________', 50, doc.y + 20);
-    doc.text(`${data.societe.raisonSociale}`, 50, doc.y + 40);
+    doc.text(`${partyDisplayName(data.societe)}`, 50, doc.y + 40);
     
     doc.text('Signature de l\'acheteur:', 350, doc.y - 60);
     doc.text('___________________', 350, doc.y - 40);

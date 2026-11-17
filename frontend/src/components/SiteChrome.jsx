@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { BRAND_NAME } from '../brand';
+import { openCookieBanner } from './CookieBanner';
 import './SiteChrome.css';
 
 /**
@@ -46,6 +47,9 @@ export function SiteFooter() {
             <ul>
               <li><Link to="/#cerfa">Générer le CERFA 15776</Link></li>
               <li><Link to="/cerfa-15776">Guide CERFA 15776</Link></li>
+              <li><Link to="/contrat-vente-vehicule-occasion">Contrat de vente VO</Link></li>
+              <li><Link to="/facture-vente-vehicule-occasion">Facture véhicule d’occasion</Link></li>
+              <li><Link to="/mandat-immatriculation-cerfa-13757">Mandat d’immatriculation</Link></li>
               <li><Link to="/documents-vente-vehicule">Tous les documents</Link></li>
             </ul>
           </div>
@@ -68,8 +72,16 @@ export function SiteFooter() {
         </div>
       </div>
       <p className="site-footer-legal">
-        {BRAND_NAME} facilite la rédaction de formulaires. Vérifiez toujours vos informations avant dépôt administratif.
+        {BRAND_NAME} facilite la rédaction de formulaires. Ce site n’est pas un service de l’État ni de l’ANTS.
+        Vérifiez toujours vos informations avant dépôt administratif.
       </p>
+      <nav className="site-footer-links" aria-label="Informations légales">
+        <Link to="/mentions-legales">Mentions légales</Link>
+        <Link to="/confidentialite">Confidentialité</Link>
+        <button type="button" className="site-footer-linkbtn" onClick={openCookieBanner}>
+          Gérer les cookies
+        </button>
+      </nav>
     </footer>
   );
 }
