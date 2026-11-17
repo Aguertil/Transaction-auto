@@ -96,5 +96,19 @@ fs.writeFileSync(
   `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`
 );
 
+// Contrôle : chaque page (hors accueil) doit avoir sa réécriture dans render.yaml
+const renderYamlPath = path.join(root, '..', 'render.yaml');
+if (fs.existsSync(renderYamlPath)) {
+  const yaml = fs.readFileSync(renderYamlPath, 'utf8');
+  const missing = routes
+    .filter((r) => r.path !== '/')
+    .filter((r) => !yaml.includes(`source: ${r.path}\n`));
+  if (missing.length) {
+    console.warn('\n⚠️  Pages sans règle de réécriture dans render.yaml (et le tableau de bord Render) :');
+    missing.forEach((r) => console.warn(`   - ${r.path}  →  ${r.path}/index.html`));
+    console.warn('   Sans cette règle, ces pages renverront une erreur 404 en production.\n');
+  }
+}
+
 fs.rmSync(path.join(root, 'dist-ssr'), { recursive: true, force: true });
 console.log(`✓ Pré-rendu : ${count} pages + 404.html + app.html + sitemap.xml`);

@@ -58,10 +58,12 @@ services:
           envVarKey: RENDER_EXTERNAL_URL
       - key: VITE_GA_MEASUREMENT_ID
         sync: false
-    # Les pages publiques sont pré-rendues (dist/<page>/index.html) et servies
-    # telles quelles. Seules les routes de l'application connectée sont
-    # réécrites vers une coquille vide (noindex). Toute autre URL inconnue
-    # reçoit dist/404.html avec un vrai statut 404.
+    # Pages publiques pré-rendues (dist/<page>/index.html). Render ne sert le
+    # index.html d'un dossier que si l'URL finit par « / » : chaque page a donc
+    # sa propre réécriture. ⚠️ Nouvelle page ou nouvel article de blog = ajouter
+    # une règle ici ET dans le tableau de bord Render (Redirects/Rewrites) ;
+    # le build affiche un avertissement si une page n'a pas de règle.
+    # Pas de règle « /* » : toute autre URL reçoit dist/404.html (vrai 404).
     routes:
       - type: rewrite
         source: /login
@@ -81,3 +83,45 @@ services:
       - type: rewrite
         source: /auth/*
         destination: /app.html
+      - type: rewrite
+        source: /cerfa-15776
+        destination: /cerfa-15776/index.html
+      - type: rewrite
+        source: /documents-vente-vehicule
+        destination: /documents-vente-vehicule/index.html
+      - type: rewrite
+        source: /facture-vente-vehicule-occasion
+        destination: /facture-vente-vehicule-occasion/index.html
+      - type: rewrite
+        source: /contrat-vente-vehicule-occasion
+        destination: /contrat-vente-vehicule-occasion/index.html
+      - type: rewrite
+        source: /mandat-immatriculation-cerfa-13757
+        destination: /mandat-immatriculation-cerfa-13757/index.html
+      - type: rewrite
+        source: /blog
+        destination: /blog/index.html
+      - type: rewrite
+        source: /blog/comment-remplir-cerfa-15776
+        destination: /blog/comment-remplir-cerfa-15776/index.html
+      - type: rewrite
+        source: /blog/documents-vente-pro-particulier
+        destination: /blog/documents-vente-pro-particulier/index.html
+      - type: rewrite
+        source: /blog/quitus-fiscal-vehicule-quand
+        destination: /blog/quitus-fiscal-vehicule-quand/index.html
+      - type: rewrite
+        source: /blog/importer-voiture-ue-papiers-necessaires
+        destination: /blog/importer-voiture-ue-papiers-necessaires/index.html
+      - type: rewrite
+        source: /blog/checklist-import-vehicule-occasion-etranger
+        destination: /blog/checklist-import-vehicule-occasion-etranger/index.html
+      - type: rewrite
+        source: /blog/demande-quitus-fiscal-ants-grand-est-sie
+        destination: /blog/demande-quitus-fiscal-ants-grand-est-sie/index.html
+      - type: rewrite
+        source: /mentions-legales
+        destination: /mentions-legales/index.html
+      - type: rewrite
+        source: /confidentialite
+        destination: /confidentialite/index.html
