@@ -112,8 +112,8 @@ router.get('/available', optionalAuth, async (req, res) => {
       { type: 'cerfa-13750', name: '07-Formulaire-Immatriculation-CERFA-13750.pdf', label: 'Formulaire immatriculation (CERFA 13750)', available: fullAccess },
       { type: 'bdc-mb', name: '08-Bon-de-Commande.pdf', label: 'Bon de commande', available: fullAccess },
       { type: 'facture', name: '02-Facture-Vente.pdf', label: 'Facture de vente', available: fullAccess },
-      { type: 'garantie', name: '04-Contrat-Garantie-3mois.pdf', label: 'Contrat de garantie 3 mois', available: fullAccess },
-      { type: 'notice', name: '05-Notice-Garanties-Legales.pdf', label: 'Notice garanties légales', available: fullAccess },
+      { type: 'garantie', name: '04-Contrat-Garantie-3mois.pdf', label: 'Contrat de garantie 3 mois', available: fullAccess, proOnly: true },
+      { type: 'notice', name: '05-Notice-Garanties-Legales.pdf', label: 'Notice garanties légales', available: fullAccess, proOnly: true },
       { type: 'pv-livraison', name: '06-PV-Livraison.pdf', label: 'Procès-verbal de livraison', available: fullAccess },
       { type: 'quitus-fiscal', name: '09-Quitus-Fiscal-1993-PART-D.pdf', label: 'Quitus fiscal (1993-PART-D)', available: fullAccess }
     ];

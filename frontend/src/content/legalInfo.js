@@ -12,7 +12,7 @@ export const LEGAL_INFO = {
   directeurPublication: '[Prénom Nom]',
   email: '[contact@actedevente.fr]',
   // Durée de conservation des données saisies lors d'une génération sans compte
-  conservationPublic: '[12 mois]',
+  conservationPublic: '24 mois, puis suppression automatique',
   // Durée de conservation après suppression du compte
   conservationCompte: '[3 mois]',
   updated: '16 novembre 2026'

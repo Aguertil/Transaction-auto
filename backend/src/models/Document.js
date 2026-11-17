@@ -56,6 +56,18 @@ const documentSchema = new mongoose.Schema({
 documentSchema.index({ createdAt: -1 });
 documentSchema.index({ userId: 1, createdAt: -1 });
 
+// RGPD : les données saisies lors d'une génération sans compte sont
+// supprimées automatiquement par MongoDB après 24 mois.
+export const PUBLIC_RETENTION_SECONDS = 60 * 60 * 24 * 730;
+documentSchema.index(
+  { createdAt: 1 },
+  {
+    name: 'public_documents_ttl_24_mois',
+    expireAfterSeconds: PUBLIC_RETENTION_SECONDS,
+    partialFilterExpression: { source: 'public' }
+  }
+);
+
 const Document = mongoose.model('Document', documentSchema);
 
 export default Document;

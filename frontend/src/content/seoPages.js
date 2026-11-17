@@ -133,7 +133,7 @@ export const seoPages = [
       },
       {
         type: 'note',
-        text: 'Ce modèle est conçu pour un vendeur professionnel. Entre particuliers, la garantie légale de conformité ne s’applique pas (seule la garantie des vices cachés joue) : adaptez les clauses en conséquence.'
+        text: 'Le contrat s’adapte au statut du vendeur. Pour un vendeur **particulier**, la garantie légale de conformité ne s’applique pas : le contrat ne prévoit aucune garantie commerciale et rappelle la garantie des vices cachés. Le contrat de garantie et la notice des garanties sont réservés aux vendeurs professionnels.'
       }
     ],
     faq: [
