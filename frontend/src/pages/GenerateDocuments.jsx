@@ -8,6 +8,11 @@ import './GenerateDocuments.css';
 
 // Documents de garantie : réservés aux vendeurs professionnels
 const PRO_ONLY_DOCS = ['garantie', 'notice'];
+// Quitus 1993-PART-D : formulaire réservé à un acheteur particulier
+const PARTICULIER_BUYER_ONLY_DOCS = ['quitus-fiscal'];
+const isBlockedDoc = (type, societeType, clientType) =>
+  (societeType !== 'pro' && PRO_ONLY_DOCS.includes(type)) ||
+  (clientType === 'pro' && PARTICULIER_BUYER_ONLY_DOCS.includes(type));
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -25,6 +30,7 @@ export default function GenerateDocuments() {
       type: 'pro',
       raisonSociale: '',
       siret: '',
+      numeroTVA: '',
       nom: '',
       prenom: '',
       adresse: '',
@@ -125,6 +131,7 @@ export default function GenerateDocuments() {
         nextSociete.type = 'pro';
         if (user.societe?.raisonSociale) nextSociete.raisonSociale = user.societe.raisonSociale;
         if (user.societe?.siret) nextSociete.siret = user.societe.siret;
+        if (user.societe?.numeroTVA) nextSociete.numeroTVA = user.societe.numeroTVA;
         if (user.societe?.adresse) nextSociete.adresse = user.societe.adresse;
         if (user.societe?.codePostal) nextSociete.codePostal = user.societe.codePostal;
         if (user.societe?.ville) nextSociete.ville = user.societe.ville;
@@ -300,16 +307,15 @@ export default function GenerateDocuments() {
         ? `${API_URL}/api/documents/generate`
         : `${API_URL}/api/documents/public/generate`;
 
-      const isProSeller = formData.societe.type === 'pro';
-      const payload = isProSeller
-        ? formData
-        : {
-            ...formData,
-            options: {
-              ...formData.options,
-              selectedDocuments: formData.options.selectedDocuments.filter((t) => !PRO_ONLY_DOCS.includes(t))
-            }
-          };
+      const payload = {
+        ...formData,
+        options: {
+          ...formData.options,
+          selectedDocuments: formData.options.selectedDocuments.filter(
+            (t) => !isBlockedDoc(t, formData.societe.type, formData.client.type)
+          )
+        }
+      };
 
       const response = await axios.post(endpoint, payload, {
         responseType: 'blob'
@@ -333,7 +339,7 @@ export default function GenerateDocuments() {
 
   const allDocuments = [...availableDocs.free, ...availableDocs.premium];
   const effectiveDocCount = formData.options.selectedDocuments.filter(
-    (t) => formData.societe.type === 'pro' || !PRO_ONLY_DOCS.includes(t)
+    (t) => !isBlockedDoc(t, formData.societe.type, formData.client.type)
   ).length;
 
   return (
@@ -416,13 +422,16 @@ export default function GenerateDocuments() {
             <h3>Documents à générer</h3>
             <div className="documents-selector">
               {allDocuments.map(doc => {
-                const proOnlyBlocked = formData.societe.type !== 'pro' && PRO_ONLY_DOCS.includes(doc.type);
+                const proOnlyBlocked = isBlockedDoc(doc.type, formData.societe.type, formData.client.type);
+                const blockedReason = PRO_ONLY_DOCS.includes(doc.type)
+                  ? 'vendeur professionnel uniquement'
+                  : 'acheteur particulier uniquement';
                 const disabled = !doc.available || proOnlyBlocked;
                 return (
                   <label
                     key={doc.type}
                     className={`doc-checkbox ${disabled ? 'disabled' : ''}`}
-                    title={proOnlyBlocked ? 'Réservé aux vendeurs professionnels' : undefined}
+                    title={proOnlyBlocked ? `Réservé : ${blockedReason}` : undefined}
                   >
                     <input
                       type="checkbox"
@@ -431,7 +440,7 @@ export default function GenerateDocuments() {
                       disabled={disabled}
                     />
                     <span>{doc.label}</span>
-                    {proOnlyBlocked && <span className="doc-pro-only"> — vendeur professionnel uniquement</span>}
+                    {proOnlyBlocked && <span className="doc-pro-only"> — {blockedReason}</span>}
                     {!doc.available && <span className="lock-icon">🔒</span>}
                   </label>
                 );
@@ -475,6 +484,13 @@ export default function GenerateDocuments() {
                     placeholder="SIRET"
                     value={formData.societe.siret}
                     onChange={(e) => handleChange('societe', 'siret', e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    placeholder="N° TVA intracommunautaire (ex. FR12345678901)"
+                    title="Mention obligatoire sur la facture"
+                    value={formData.societe.numeroTVA || ''}
+                    onChange={(e) => handleChange('societe', 'numeroTVA', e.target.value.toUpperCase().replace(/\s/g, ''))}
                   />
                 </>
               ) : (
@@ -761,7 +777,7 @@ export default function GenerateDocuments() {
             </div>
           </section>
 
-          {formData.options.selectedDocuments.includes('quitus-fiscal') && (
+          {formData.options.selectedDocuments.includes('quitus-fiscal') && formData.client.type !== 'pro' && (
             <section className="form-section">
               <h3>Vendeur UE (quitus fiscal)</h3>
               <p className="ocr-hint">

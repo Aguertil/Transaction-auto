@@ -134,6 +134,8 @@ function findCerfaFile(baseName) {
  */
 /** Documents de garantie : uniquement si le vendeur est un professionnel. */
 export const PRO_ONLY_DOCUMENTS = ['garantie', 'notice'];
+/** Quitus 1993-PART-D : uniquement pour un acheteur particulier. */
+export const PARTICULIER_BUYER_ONLY_DOCUMENTS = ['quitus-fiscal'];
 
 export async function generateAllDocuments(data) {
   const archive = archiver('zip', { zlib: { level: 9 } });
@@ -216,6 +218,10 @@ export async function generateAllDocuments(data) {
       console.log(`⏭️  ${doc.type} ignoré : vendeur particulier`);
       return false;
     }
+    if (PARTICULIER_BUYER_ONLY_DOCUMENTS.includes(doc.type) && isPro(data.client)) {
+      console.log(`⏭️  ${doc.type} ignoré : acheteur professionnel`);
+      return false;
+    }
     return true;
   });
 
@@ -252,6 +258,9 @@ export async function generateAllDocuments(data) {
 export async function generateSingleDocument(type, data) {
   if (PRO_ONLY_DOCUMENTS.includes(type) && !isPro(data.societe)) {
     throw new Error('Les documents de garantie sont réservés aux vendeurs professionnels.');
+  }
+  if (PARTICULIER_BUYER_ONLY_DOCUMENTS.includes(type) && isPro(data.client)) {
+    throw new Error('Le formulaire de quitus 1993-PART-D est réservé aux acheteurs particuliers.');
   }
   switch (type) {
     case 'cerfa-cession':

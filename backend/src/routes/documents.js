@@ -115,7 +115,7 @@ router.get('/available', optionalAuth, async (req, res) => {
       { type: 'garantie', name: '04-Contrat-Garantie-3mois.pdf', label: 'Contrat de garantie 3 mois', available: fullAccess, proOnly: true },
       { type: 'notice', name: '05-Notice-Garanties-Legales.pdf', label: 'Notice garanties légales', available: fullAccess, proOnly: true },
       { type: 'pv-livraison', name: '06-PV-Livraison.pdf', label: 'Procès-verbal de livraison', available: fullAccess },
-      { type: 'quitus-fiscal', name: '09-Quitus-Fiscal-1993-PART-D.pdf', label: 'Quitus fiscal (1993-PART-D)', available: fullAccess }
+      { type: 'quitus-fiscal', name: '09-Quitus-Fiscal-1993-PART-D.pdf', label: 'Quitus fiscal (1993-PART-D)', available: fullAccess, particulierBuyerOnly: true }
     ];
 
     res.json({
