@@ -50,6 +50,11 @@ const documentSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  // Renseigné à la suppression du compte : déclenche l'effacement après 6 mois
+  accountDeletedAt: {
+    type: Date,
+    default: undefined
   }
 });
 
@@ -66,6 +71,14 @@ documentSchema.index(
     expireAfterSeconds: PUBLIC_RETENTION_SECONDS,
     partialFilterExpression: { source: 'public' }
   }
+);
+
+// RGPD : documents d'un compte supprimé effacés 6 mois après la suppression.
+// (L'index TTL n'agit que sur les documents où accountDeletedAt est défini.)
+export const DELETED_ACCOUNT_RETENTION_SECONDS = 60 * 60 * 24 * 182;
+documentSchema.index(
+  { accountDeletedAt: 1 },
+  { name: 'deleted_account_documents_ttl_6_mois', expireAfterSeconds: DELETED_ACCOUNT_RETENTION_SECONDS }
 );
 
 const Document = mongoose.model('Document', documentSchema);
