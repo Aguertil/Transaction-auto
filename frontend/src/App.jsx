@@ -24,22 +24,11 @@ import { legalPages } from './content/legalPages';
 import './index.css';
 
 function AppRoutes() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
 
-  if (loading) {
-    return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        fontSize: '18px',
-        color: '#666'
-      }}>
-        Chargement...
-      </div>
-    );
-  }
+  // Pas d'écran « Chargement… » global : les pages publiques s'affichent tout de
+  // suite, même si le serveur (offre gratuite Render) se réveille encore.
+  // Seules les pages protégées attendent la session (voir ProtectedRoute).
 
   return (
     <Routes>

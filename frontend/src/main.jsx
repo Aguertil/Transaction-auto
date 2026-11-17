@@ -9,6 +9,15 @@ if (gaFromEnv.startsWith('G-') && !window.__GA_MEASUREMENT_ID__) {
   window.__GA_MEASUREMENT_ID__ = gaFromEnv;
 }
 
+// Réveille le serveur dès l'arrivée d'un visiteur (hébergement mis en veille
+// après inactivité) : il est prêt quand le visiteur génère son document.
+try {
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  fetch(`${apiUrl}/api/health`, { mode: 'cors', cache: 'no-store' }).catch(() => {});
+} catch {
+  /* sans conséquence */
+}
+
 // Le HTML pré-rendu au build est remplacé par l'application interactive.
 // (createRoot plutôt que hydrateRoot : évite les écarts SSR/navigateur liés
 // à la session utilisateur et à la date du jour dans les formulaires.)
