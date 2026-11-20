@@ -16,30 +16,6 @@ export const authenticateToken = async (req, res, next) => {
 
     const decoded = jwt.verify(token, JWT_SECRET);
     
-    // Mode développement : compte admin par défaut
-    if (decoded.userId === 'dev-admin-id') {
-      req.user = {
-        _id: 'dev-admin-id',
-        email: 'admin@mbauto.fr',
-        nom: 'Admin',
-        prenom: 'MB-Auto',
-        role: 'admin',
-        isActive: true,
-        hasPremiumAccess: function() { return true; },
-        toPublicJSON: function() {
-          return {
-            _id: this._id,
-            email: this.email,
-            nom: this.nom,
-            prenom: this.prenom,
-            role: this.role,
-            isActive: this.isActive
-          };
-        }
-      };
-      return next();
-    }
-    
     try {
       const user = await User.findById(decoded.userId);
       if (!user || !user.isActive) {
@@ -48,7 +24,6 @@ export const authenticateToken = async (req, res, next) => {
       req.user = user;
       next();
     } catch (dbError) {
-      // Si erreur DB, rejeter (sauf pour le compte admin dev)
       return res.status(401).json({ error: 'Erreur d\'authentification' });
     }
   } catch (error) {
@@ -81,8 +56,7 @@ export const requireAdmin = (req, res, next) => {
     return res.status(401).json({ error: 'Authentification requise' });
   }
 
-  const userRole = req.user.role || (req.user.role === undefined && req.user._id === 'dev-admin-id' ? 'admin' : null);
-  if (userRole !== 'admin') {
+  if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Accès admin requis' });
   }
 
@@ -100,38 +74,13 @@ export const optionalAuth = async (req, res, next) => {
     if (token) {
       const decoded = jwt.verify(token, JWT_SECRET);
       
-      // Mode développement : compte admin par défaut
-      if (decoded.userId === 'dev-admin-id') {
-        req.user = {
-          _id: 'dev-admin-id',
-          email: 'admin@mbauto.fr',
-          nom: 'Admin',
-          prenom: 'MB-Auto',
-          role: 'admin',
-          isActive: true,
-          hasPremiumAccess: function() { return true; }
-        };
-        return next();
-      }
-      
       try {
         const user = await User.findById(decoded.userId);
         if (user && user.isActive) {
           req.user = user;
         }
       } catch (dbError) {
-        // Si erreur DB et c'est le compte admin dev, utiliser le compte dev
-        if (decoded.userId === 'dev-admin-id') {
-          req.user = {
-            _id: 'dev-admin-id',
-            email: 'admin@mbauto.fr',
-            nom: 'Admin',
-            prenom: 'MB-Auto',
-            role: 'admin',
-            isActive: true,
-            hasPremiumAccess: function() { return true; }
-          };
-        }
+        // Base indisponible : on continue sans utilisateur (accès gratuit)
       }
     }
     next();

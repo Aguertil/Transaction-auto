@@ -52,14 +52,14 @@ fi
 echo ""
 echo "👤 Création du compte admin..."
 cd "$(dirname "$0")"
-npm run create-admin admin@mbauto.fr Admin123 Admin MB-Auto
+npm run create-admin "$ADMIN_EMAIL" "$ADMIN_PASSWORD" Admin MB-Auto
 
 echo ""
 echo "✅ Configuration terminée !"
 echo ""
 echo "📋 Identifiants admin :"
-echo "   Email: admin@mbauto.fr"
-echo "   Password: Admin123"
+echo "   Email: $ADMIN_EMAIL"
+echo "   Mot de passe : celui de ADMIN_PASSWORD"
 echo ""
 echo "🔗 URLs :"
 echo "   Frontend: http://localhost:5175"

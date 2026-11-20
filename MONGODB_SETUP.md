@@ -36,7 +36,7 @@ MONGODB_URI=mongodb://localhost:27017/auto-documents
 
 ```bash
 cd backend
-npm run create-admin admin@mbauto.fr Admin123 Admin MB-Auto
+npm run create-admin <email-admin> <mot-de-passe-fort> Admin MB-Auto
 ```
 
 ## Commandes utiles
