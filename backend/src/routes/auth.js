@@ -148,36 +148,6 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Email et mot de passe requis' });
     }
 
-    // Mode développement : compte admin par défaut (si MongoDB non disponible)
-    if (email === 'admin@mbauto.fr' && password === 'Admin123') {
-      const adminUser = {
-        _id: 'dev-admin-id',
-        email: 'admin@mbauto.fr',
-        nom: 'Admin',
-        prenom: 'MB-Auto',
-        role: 'admin',
-        isActive: true,
-        toPublicJSON: function() {
-          return {
-            _id: this._id,
-            email: this.email,
-            nom: this.nom,
-            prenom: this.prenom,
-            role: this.role
-          };
-        }
-      };
-      
-      const token = generateToken(adminUser._id);
-      console.log('✅ Connexion admin (mode développement)');
-      
-      return res.json({
-        message: 'Connexion réussie',
-        token,
-        user: adminUser.toPublicJSON()
-      });
-    }
-
     // Trouver l'utilisateur dans la base de données
     try {
       const user = await User.findOne({ email });
@@ -232,30 +202,12 @@ router.get('/me', async (req, res) => {
       return res.status(401).json({ error: 'Non authentifié' });
     }
 
-    // Utiliser le même secret que dans generateToken
-    const { generateToken } = await import('../middleware/auth.js');
-    // JWT_SECRET est déjà importé en haut du fichier
-    
     let decoded;
     try {
       decoded = jwt.verify(token, JWT_SECRET);
     } catch (jwtError) {
       console.error('Erreur vérification JWT dans /me:', jwtError.message);
       return res.status(401).json({ error: 'Token invalide', details: jwtError.message });
-    }
-    
-    // Mode développement : compte admin par défaut
-    if (decoded.userId === 'dev-admin-id') {
-      return res.json({
-        user: {
-          _id: 'dev-admin-id',
-          email: 'admin@mbauto.fr',
-          nom: 'Admin',
-          prenom: 'MB-Auto',
-          role: 'admin',
-          isActive: true
-        }
-      });
     }
     
     try {
@@ -265,19 +217,6 @@ router.get('/me', async (req, res) => {
       }
       res.json({ user: user.toPublicJSON() });
     } catch (dbError) {
-      // Si erreur DB et c'est le compte admin dev, retourner les infos
-      if (decoded.userId === 'dev-admin-id') {
-        return res.json({
-          user: {
-            _id: 'dev-admin-id',
-            email: 'admin@mbauto.fr',
-            nom: 'Admin',
-            prenom: 'MB-Auto',
-            role: 'admin',
-            isActive: true
-          }
-        });
-      }
       console.error('Erreur DB dans /me:', dbError.message);
       return res.status(401).json({ error: 'Erreur base de données' });
     }

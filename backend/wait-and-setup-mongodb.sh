@@ -72,7 +72,7 @@ fi
 echo ""
 echo "👤 Création du compte admin..."
 cd "$(dirname "$0")"
-npm run create-admin admin@mbauto.fr Admin123 Admin MB-Auto
+npm run create-admin "$ADMIN_EMAIL" "$ADMIN_PASSWORD" Admin MB-Auto
 
 if [ $? -eq 0 ]; then
     echo ""
@@ -84,8 +84,8 @@ if [ $? -eq 0 ]; then
     echo "✅ Compte admin: Créé dans MongoDB"
     echo ""
     echo "📋 Identifiants :"
-    echo "   Email: admin@mbauto.fr"
-    echo "   Password: Admin123"
+    echo "   Email: $ADMIN_EMAIL"
+    echo "   Mot de passe : celui de ADMIN_PASSWORD"
     echo ""
     echo "🔗 URLs :"
     echo "   Frontend: http://localhost:5175"
@@ -99,7 +99,7 @@ else
     echo ""
     echo "⚠️  Erreur lors de la création du compte admin"
     echo "   Le compte admin fonctionne en mode développement"
-    echo "   Email: admin@mbauto.fr"
-    echo "   Password: Admin123"
+    echo "   Email: $ADMIN_EMAIL"
+    echo "   Mot de passe : celui de ADMIN_PASSWORD"
 fi
 

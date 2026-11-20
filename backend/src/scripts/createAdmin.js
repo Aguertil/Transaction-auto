@@ -9,8 +9,12 @@ async function createAdmin() {
   try {
     await connectDatabase();
 
-    const email = process.argv[2] || 'admin@example.com';
-    const password = process.argv[3] || 'admin123';
+    const email = process.argv[2];
+    const password = process.argv[3];
+    if (!email || !password || password.length < 12) {
+      console.error('Usage : npm run create-admin <email> <mot-de-passe (12 caractères minimum)> [nom] [prenom]');
+      process.exit(1);
+    }
     const nom = process.argv[4] || 'Admin';
     const prenom = process.argv[5] || 'System';
 

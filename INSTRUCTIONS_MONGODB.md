@@ -45,7 +45,7 @@ Vous devriez voir : `{ ok: 1 }`
 
 ```bash
 cd backend
-npm run create-admin admin@mbauto.fr Admin123 Admin MB-Auto
+npm run create-admin <email-admin> <mot-de-passe-fort> Admin MB-Auto
 ```
 
 ### 5. Redémarrer le backend
@@ -72,7 +72,7 @@ Si l'installation locale pose problème, utilisez MongoDB Atlas :
    ```
 5. **Créer le compte admin** :
    ```bash
-   npm run create-admin admin@mbauto.fr Admin123 Admin MB-Auto
+   npm run create-admin <email-admin> <mot-de-passe-fort> Admin MB-Auto
    ```
 
 ## Vérification
@@ -83,7 +83,7 @@ Une fois MongoDB configuré, testez la connexion :
 # Test de connexion API
 curl -X POST http://localhost:3001/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@mbauto.fr","password":"Admin123"}'
+  -d '{"email":"<email-admin>","password":"<mot-de-passe-fort>"}'
 ```
 
 Vous devriez recevoir un token JWT.
@@ -137,8 +137,8 @@ sudo chown -R $(whoami) /usr/local/var/log/mongodb
 ## Identifiants Admin
 
 Une fois MongoDB configuré :
-- **Email** : `admin@mbauto.fr`
-- **Password** : `Admin123`
+- **Email** : `<email-admin>`
+- **Password** : `<mot-de-passe-fort>`
 - **Rôle** : Admin
 
 ⚠️ **Changez le mot de passe après la première connexion !**

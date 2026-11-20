@@ -23,12 +23,6 @@ router.post('/create-checkout-session', authenticateToken, async (req, res) => {
       });
     }
 
-    if (req.user._id === 'dev-admin-id') {
-      return res.status(400).json({
-        error: 'Compte de démonstration',
-        message: 'Créez un compte utilisateur réel pour tester le paiement.'
-      });
-    }
 
     const user = await User.findById(req.user._id);
     if (!user) {
@@ -88,9 +82,6 @@ router.post('/create-portal-session', authenticateToken, async (req, res) => {
       return res.status(503).json({ error: 'Stripe non configuré' });
     }
 
-    if (req.user._id === 'dev-admin-id') {
-      return res.status(400).json({ error: 'Non disponible pour le compte de démo' });
-    }
 
     const user = await User.findById(req.user._id);
     if (!user?.stripeCustomerId) {
