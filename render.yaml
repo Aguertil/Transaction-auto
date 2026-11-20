@@ -120,6 +120,18 @@ services:
         source: /blog/demande-quitus-fiscal-ants-grand-est-sie
         destination: /blog/demande-quitus-fiscal-ants-grand-est-sie/index.html
       - type: rewrite
+        source: /blog/code-de-cession-ants
+        destination: /blog/code-de-cession-ants/index.html
+      - type: rewrite
+        source: /blog/vendre-vehicule-proche-decede
+        destination: /blog/vendre-vehicule-proche-decede/index.html
+      - type: rewrite
+        source: /blog/vendre-voiture-carte-grise-deux-noms
+        destination: /blog/vendre-voiture-carte-grise-deux-noms/index.html
+      - type: rewrite
+        source: /blog/vendre-voiture-sans-carte-grise
+        destination: /blog/vendre-voiture-sans-carte-grise/index.html
+      - type: rewrite
         source: /mentions-legales
         destination: /mentions-legales/index.html
       - type: rewrite
