@@ -1,0 +1,29 @@
+# Garde l'API Render (offre gratuite) éveillée en journée pour éviter ~50 s d'attente
+# au premier visiteur. Coût : 0 €.
+#
+# Budget Render : 750 h gratuites / mois pour TOUS les services gratuits du compte.
+# 7 h → 23 h (heure de Paris) ≈ 16 h × 31 j ≈ 500 h, il reste ~250 h pour les autres
+# services (screenapi…). Ne pas passer à 24 h/24 : au-delà de 750 h, Render suspend
+# tous les services gratuits jusqu'au mois suivant.
+#
+# GitHub désactive les tâches planifiées après 60 jours sans activité sur le dépôt :
+# relancer depuis l'onglet Actions si besoin.
+name: Garder l'API éveillée
+
+on:
+  schedule:
+    # Toutes les 10 min, de 6 h à 21 h 59 UTC (7 h → 23 h à Paris en hiver)
+    - cron: '*/10 6-21 * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Ping /api/health
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 90 https://auto-documents-api.onrender.com/api/health || true)
+          echo "HTTP $code"
