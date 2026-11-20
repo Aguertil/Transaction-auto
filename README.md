@@ -109,9 +109,9 @@ Puis ouvrez `http://localhost:5173` dans votre navigateur.
 
 ## 📚 Documentation Complète
 
-- **[INSTALLATION.md](INSTALLATION.md)** - Guide d'installation détaillé
-- **[INSTRUCTIONS_CERFA.md](INSTRUCTIONS_CERFA.md)** - Comment obtenir les fichiers CERFA
-- **[CONFORMITE_LEGALE.md](CONFORMITE_LEGALE.md)** - Documentation de conformité légale
+- **[INSTALLATION.md](docs/INSTALLATION.md)** - Guide d'installation détaillé
+- **[INSTRUCTIONS_CERFA.md](docs/INSTRUCTIONS_CERFA.md)** - Comment obtenir les fichiers CERFA
+- **[CONFORMITE_LEGALE.md](docs/CONFORMITE_LEGALE.md)** - Documentation de conformité légale
 - **[EXEMPLE_DONNEES.json](EXEMPLE_DONNEES.json)** - Exemple de structure de données
 
 ## 🔍 Inspection des Champs CERFA
@@ -132,7 +132,7 @@ Ce script liste tous les champs disponibles dans le PDF pour faciliter l'adaptat
 - `cerfa_15776_02.pdf` (obligatoire)
 - `cerfa_13757_03.pdf` (optionnel)
 
-Voir [INSTRUCTIONS_CERFA.md](INSTRUCTIONS_CERFA.md) pour les liens de téléchargement.
+Voir [INSTRUCTIONS_CERFA.md](docs/INSTRUCTIONS_CERFA.md) pour les liens de téléchargement.
 
 ## 🛠️ Technologies Utilisées
 

@@ -59,8 +59,8 @@ export default function Register() {
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('Le mot de passe doit contenir au moins 6 caractères');
+    if (formData.password.length < 8) {
+      setError('Le mot de passe doit contenir au moins 8 caractères');
       return;
     }
 
@@ -226,7 +226,7 @@ export default function Register() {
               onChange={handleChange}
               required
               placeholder="••••••••"
-              minLength="6"
+              minLength="8"
             />
           </div>
 

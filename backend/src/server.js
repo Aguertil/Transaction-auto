@@ -10,6 +10,7 @@ import dotenv from 'dotenv';
 // Import des routes
 import documentRoutes from './routes/documents.js';
 import authRoutes from './routes/auth.js';
+import { authLimiter, generateLimiter, ocrLimiter } from './middleware/rateLimit.js';
 import adminRoutes from './routes/admin.js';
 import billingRoutes from './routes/billing.js';
 import ocrRoutes from './routes/ocr.js';
@@ -29,6 +30,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+// Render place l'application derrière un proxy : nécessaire pour l'IP réelle (limitation de débit)
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3001;
 
 // Middleware — autoriser actedevente.fr ET l’URL Render
@@ -52,11 +55,10 @@ app.post(
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, '../public')));
 
 // Configuration de la session (pour Passport)
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-session-secret-change-in-production',
+  secret: process.env.SESSION_SECRET || 'dev-only-session-secret',
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -91,16 +93,20 @@ app.get('/api/health', (req, res) => {
 });
 
 // Routes d'authentification
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
 app.use('/api/auth', authRoutes);
 
 // Facturation / Stripe (checkout & portail client)
 app.use('/api/billing', billingRoutes);
 
 // Routes de documents
+app.use('/api/documents/public/generate', generateLimiter);
+app.use('/api/documents/generate', generateLimiter);
 app.use('/api/documents', documentRoutes);
 
 // Lecture OCR des pièces justificatives
-app.use('/api/ocr', ocrRoutes);
+app.use('/api/ocr', ocrLimiter, ocrRoutes);
 
 // Routes d'administration
 app.use('/api/admin', adminRoutes);
