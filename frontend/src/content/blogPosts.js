@@ -4,6 +4,225 @@
  */
 export const blogPosts = [
   {
+    slug: 'code-de-cession-ants',
+    title: 'Code de cession ANTS : comment l’obtenir et le transmettre',
+    description:
+      'Code de cession : à quoi il sert, comment l’obtenir sur le site de l’ANTS, sa durée de validité de 15 jours et que faire s’il est perdu ou expiré.',
+    date: '2026-11-20',
+    keywords: ['code de cession', 'code de cession ANTS', 'déclaration de cession', 'vendre voiture ANTS'],
+    content: [
+      {
+        type: 'p',
+        text: 'Quand vous vendez ou donnez votre véhicule, vous devez déclarer la cession sur le site de l’ANTS. À la fin de cette démarche, le site affiche un code de cession. C’est ce code qui permet à l’acheteur de faire sa carte grise à son nom sans attendre.'
+      },
+      { type: 'h2', text: 'À quoi sert le code de cession ?' },
+      {
+        type: 'ul',
+        items: [
+          'Pour le vendeur : il prouve que la vente est enregistrée. Vous n’êtes plus responsable du véhicule (amendes, stationnement…) à partir de la date et de l’heure déclarées.',
+          'Pour l’acheteur : il le saisit sur le site de l’ANTS lors de sa demande de carte grise pour un véhicule d’occasion.',
+          'Il est valable 15 jours : remettez-le à l’acheteur le jour de la vente.'
+        ]
+      },
+      { type: 'h2', text: 'Comment obtenir le code de cession, étape par étape' },
+      {
+        type: 'ol',
+        items: [
+          'Connectez-vous au site de l’ANTS, idéalement avec FranceConnect ou l’application France Identité.',
+          'Choisissez la démarche « Vendre ou donner mon véhicule ». Vous pouvez la commencer avant le jour de la vente.',
+          'Saisissez l’immatriculation, le code confidentiel reçu avec la carte grise et l’identité de l’acheteur (nom de naissance, prénom, date et lieu de naissance).',
+          'Le code de cession s’affiche à l’écran : notez-le et transmettez-le à l’acheteur.',
+          'Dans les 15 jours qui suivent la signature du certificat de cession, finalisez la déclaration : date et heure de la vente, kilométrage et adresse complète de l’acheteur.',
+          'Téléchargez l’accusé d’enregistrement et conservez-le.'
+        ]
+      },
+      { type: 'h2', text: 'Les documents à remettre à l’acheteur avec le code' },
+      {
+        type: 'ul',
+        items: [
+          'Le certificat de cession (CERFA 15776) rempli et signé en 2 exemplaires : l’acheteur garde l’exemplaire n° 2.',
+          'La carte grise barrée, avec la mention « Vendu le » suivie de la date et de l’heure, et votre signature. Ne découpez pas le coupon détachable : remplissez-le et remettez la carte entière.',
+          'Le certificat de situation administrative (non-gage) de moins de 15 jours, à télécharger sur HistoVec.',
+          'Le procès-verbal de contrôle technique de moins de 6 mois si la voiture a plus de 4 ans.'
+        ]
+      },
+      { type: 'h2', text: 'Code de cession perdu, expiré ou jamais reçu' },
+      {
+        type: 'p',
+        text: 'Pas de panique : l’acheteur peut faire sa demande de carte grise sans le code, à condition que le vendeur ait bien déclaré la vente. Il devra alors fournir lui-même les justificatifs (certificat de cession, carte grise barrée…). Si vous êtes le vendeur et n’avez pas terminé la déclaration, reconnectez-vous à votre espace ANTS (« Mes démarches en cours ») pour la finaliser.'
+      },
+      { type: 'h2', text: 'Sans internet ?' },
+      {
+        type: 'p',
+        text: 'Vous pouvez vous faire aider dans un point numérique de préfecture ou une maison France Services, ou confier la démarche à un professionnel de l’automobile habilité. Il vous demandera un mandat (CERFA 13757) et votre code confidentiel.'
+      },
+      {
+        type: 'p',
+        text: 'Sur ActeDeVente.fr, préparez le CERFA 15776 gratuitement avant le rendez-vous : vous aurez déjà toutes les informations à reporter sur le site de l’ANTS. Les règles peuvent évoluer : vérifiez toujours la fiche officielle « Vendre ou donner son véhicule » sur service-public.gouv.fr.'
+      }
+    ]
+  },
+  {
+    slug: 'vendre-vehicule-proche-decede',
+    title: 'Vendre la voiture d’un proche décédé : démarches et documents',
+    description:
+      'Héritiers : quand faut-il refaire la carte grise avant de vendre ? Délai de 3 mois, justificatifs de succession, certificat de cession et déclaration ANTS.',
+    date: '2026-11-20',
+    keywords: ['vendre voiture personne décédée', 'véhicule succession', 'carte grise héritier', 'certificat de cession héritiers'],
+    content: [
+      {
+        type: 'p',
+        text: 'Après le décès d’un proche, ses héritiers peuvent vendre, donner ou faire détruire son véhicule. Dans la plupart des cas, il n’est pas nécessaire de refaire la carte grise avant la vente. Tout dépend du délai écoulé et du fait que la voiture a roulé ou non depuis le décès.'
+      },
+      { type: 'h2', text: 'Faut-il refaire la carte grise avant de vendre ?' },
+      {
+        type: 'ul',
+        items: [
+          'Décès depuis moins de 3 mois : vous pouvez vendre sans modifier la carte grise.',
+          'Plus de 3 mois, mais le véhicule n’a pas circulé depuis le décès : vous pouvez aussi vendre sans modifier la carte grise. Une attestation sur l’honneur des héritiers certifiant que le véhicule n’a pas roulé est demandée.',
+          'Plus de 3 mois et le véhicule a circulé : il faut d’abord l’immatriculer au nom d’un héritier, puis le vendre comme un véhicule ordinaire.',
+          'Carte grise perdue : faites d’abord refaire la carte grise (duplicata), comme si vous conserviez le véhicule.'
+        ]
+      },
+      { type: 'h2', text: 'Prouver votre qualité d’héritier' },
+      {
+        type: 'p',
+        text: 'L’acheteur aura besoin de l’un de ces justificatifs pour faire sa carte grise :'
+      },
+      {
+        type: 'ul',
+        items: [
+          'Une attestation du notaire mentionnant la marque et l’immatriculation du véhicule.',
+          'Ou un acte de notoriété établi par un notaire.',
+          'Ou un certificat de décès accompagné d’une attestation signée par tous les héritiers, certifiant qu’il n’existe ni testament, ni autre héritier, ni contrat de mariage, ni contestation en cours.'
+        ]
+      },
+      { type: 'h2', text: 'Les documents à remettre à l’acheteur' },
+      {
+        type: 'ol',
+        items: [
+          'Le certificat de cession (CERFA 15776) au nom des héritiers, avec leurs adresses, signé : l’acheteur garde l’exemplaire n° 2.',
+          'La carte grise portant la mention « Vendu le » ou « Cédé le » avec la date, signée par les héritiers.',
+          'Le justificatif de succession (voir ci-dessus).',
+          'Le certificat de situation administrative de moins de 15 jours.',
+          'Le contrôle technique de moins de 6 mois si le véhicule a plus de 4 ans (moins de 2 mois en cas de contre-visite).',
+          'Le code de cession obtenu sur le site de l’ANTS.'
+        ]
+      },
+      { type: 'h2', text: 'La déclaration de cession' },
+      {
+        type: 'p',
+        text: 'Comme pour toute vente, les héritiers déclarent la cession sur le site de l’ANTS (connexion par FranceConnect ou France Identité). Ils saisissent les informations de l’acheteur, obtiennent un code de cession valable 15 jours, puis finalisent la déclaration dans les 15 jours avec la date, l’heure, le kilométrage et l’adresse de l’acheteur.'
+      },
+      {
+        type: 'p',
+        text: 'Le CERFA 15776 se prépare gratuitement sur ActeDeVente.fr : indiquez les héritiers comme vendeurs. Ces règles sont résumées à partir de la fiche « Carte grise : hériter d’un véhicule immatriculé en France » de service-public.gouv.fr : en cas de doute (plusieurs héritiers en désaccord, testament, notaire), demandez conseil au notaire chargé de la succession.'
+      }
+    ]
+  },
+  {
+    slug: 'vendre-voiture-carte-grise-deux-noms',
+    title: 'Vendre une voiture avec une carte grise à deux noms (cotitulaires)',
+    description:
+      'Carte grise à deux noms : qui doit signer le certificat de cession et la carte grise barrée, comment remplir le CERFA 15776 et déclarer la vente.',
+    date: '2026-11-20',
+    keywords: ['carte grise deux noms', 'cotitulaire carte grise vente', 'certificat de cession deux propriétaires'],
+    content: [
+      {
+        type: 'p',
+        text: 'Une carte grise peut être établie au nom de plusieurs personnes : un couple, des parents et un enfant, deux associés… Ce sont les cotitulaires. La rubrique C.1 indique le titulaire principal et la rubrique C.4.1 le nombre de cotitulaires et le nom du premier d’entre eux.'
+      },
+      { type: 'h2', text: 'La règle : tous les titulaires signent' },
+      {
+        type: 'p',
+        text: 'Seul le propriétaire peut vendre le véhicule. S’il y a plusieurs cotitulaires, la signature de toutes les personnes mentionnées sur le certificat d’immatriculation est obligatoire. Concrètement :'
+      },
+      {
+        type: 'ul',
+        items: [
+          'Le certificat de cession (CERFA 15776) mentionne chaque vendeur et porte la signature de chacun.',
+          'La carte grise est barrée avec la mention « Vendu le », la date et l’heure, puis signée par chaque cotitulaire.'
+        ]
+      },
+      { type: 'h2', text: 'Si un cotitulaire ne peut pas être présent' },
+      {
+        type: 'p',
+        text: 'En pratique, le cotitulaire absent peut donner une procuration écrite à l’autre pour signer en son nom (avec une copie de sa pièce d’identité). Selon votre situation (couple marié, séparation, désaccord), les exigences peuvent différer : en cas de doute, renseignez-vous auprès de l’ANTS ou d’un professionnel habilité avant la vente, pour ne pas bloquer la carte grise de l’acheteur.'
+      },
+      { type: 'h2', text: 'Déclarer la vente sur le site de l’ANTS' },
+      {
+        type: 'ol',
+        items: [
+          'Un des cotitulaires se connecte au site de l’ANTS et lance « Vendre ou donner mon véhicule ».',
+          'Il saisit l’identité de l’acheteur et obtient le code de cession (valable 15 jours).',
+          'Il finalise la déclaration dans les 15 jours suivant la signature du certificat : date, heure, kilométrage et adresse de l’acheteur.'
+        ]
+      },
+      { type: 'h2', text: 'Ce que l’acheteur doit recevoir' },
+      {
+        type: 'ul',
+        items: [
+          'L’exemplaire n° 2 du certificat de cession signé par tous les vendeurs',
+          'La carte grise barrée et signée par tous les cotitulaires',
+          'Le code de cession',
+          'Le certificat de situation administrative de moins de 15 jours',
+          'Le contrôle technique de moins de 6 mois si la voiture a plus de 4 ans'
+        ]
+      },
+      {
+        type: 'p',
+        text: 'Astuce : générez le CERFA 15776 sur ActeDeVente.fr avec le titulaire principal, ajoutez le nom du second titulaire, puis faites signer les deux. Relisez toujours le document avant de le signer.'
+      }
+    ]
+  },
+  {
+    slug: 'vendre-voiture-sans-carte-grise',
+    title: 'Vendre une voiture sans carte grise : perdue, volée ou abîmée',
+    description:
+      'Carte grise perdue ou volée avant une vente : pourquoi faire un duplicata d’abord, la démarche ANTS, le prix (13,76 €) et le certificat provisoire.',
+    date: '2026-11-20',
+    keywords: ['vendre voiture sans carte grise', 'carte grise perdue vente', 'duplicata carte grise', 'cerfa 13753'],
+    content: [
+      {
+        type: 'p',
+        text: 'Pour vendre un véhicule à un particulier, vous devez lui remettre la carte grise barrée et signée : sans elle, il ne pourra pas faire sa propre carte grise. Si elle est perdue, volée ou abîmée, commencez par demander un duplicata.'
+      },
+      { type: 'h2', text: 'Étape 1 : demander un duplicata' },
+      {
+        type: 'ol',
+        items: [
+          'En cas de vol : déclarez d’abord le vol au commissariat ou à la gendarmerie.',
+          'Faites la demande en ligne sur le site de l’ANTS (compte ANTS, FranceConnect ou France Identité, et carte bancaire), ou chez un professionnel de l’automobile habilité. Le dépôt en préfecture n’est plus possible.',
+          'Préparez : une pièce d’identité, un justificatif de domicile de moins de 6 mois, la déclaration de perte ou de vol (CERFA 13753) et le contrôle technique si le véhicule n’en est pas dispensé. Si la carte est abîmée, joignez-la à la place de la déclaration.',
+          'Payez 13,76 € (taxe fixe de 11 € et 2,76 € d’acheminement). Un professionnel peut ajouter ses frais.'
+        ]
+      },
+      { type: 'h2', text: 'Le certificat provisoire (CPI)' },
+      {
+        type: 'p',
+        text: 'À la fin de la démarche en ligne, vous imprimez un certificat provisoire d’immatriculation. Il permet de circuler 1 mois, en France uniquement. Le duplicata arrive ensuite par lettre suivie, en quelques jours à quelques semaines selon les périodes.'
+      },
+      { type: 'h2', text: 'Étape 2 : vendre normalement' },
+      {
+        type: 'p',
+        text: 'Une fois le duplicata reçu, la vente se déroule comme d’habitude : certificat de cession en 2 exemplaires, carte grise barrée avec « Vendu le », la date et l’heure, certificat de situation administrative de moins de 15 jours, contrôle technique si nécessaire, puis déclaration de cession sur le site de l’ANTS pour obtenir le code de cession.'
+      },
+      { type: 'h2', text: 'Cas particuliers' },
+      {
+        type: 'ul',
+        items: [
+          'Héritiers : si la carte grise du défunt est introuvable, il faut aussi la faire refaire avant la vente.',
+          'Véhicule vendu pour destruction : la démarche passe par un centre VHU agréé, qui vous indiquera les justificatifs acceptés.'
+        ]
+      },
+      {
+        type: 'p',
+        text: 'Préparez dès maintenant votre certificat de cession sur ActeDeVente.fr pour gagner du temps le jour de la vente. Ces informations reprennent la fiche officielle « Perte, vol ou détérioration du certificat d’immatriculation » de service-public.gouv.fr, à vérifier au moment de votre démarche.'
+      }
+    ]
+  }
+,
+  {
     slug: 'comment-remplir-cerfa-15776',
     title: 'Comment remplir le CERFA 15776 (certificat de cession) en ligne',
     description:
