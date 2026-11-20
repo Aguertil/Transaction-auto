@@ -88,6 +88,12 @@ export const legalPages = [
             '10 ans pour les pièces comptables'
           ],
           [
+            'Statistiques de visite (sans cookies)',
+            'Pages consultées, provenance, type d’appareil, pays ; aucun cookie, aucune donnée permettant de vous identifier (Umami)',
+            'Intérêt légitime (mesure d’audience exemptée de consentement)',
+            '6 mois'
+          ],
+          [
             'Mesure d’audience',
             'Pages consultées, données techniques (Google Analytics 4, adresse IP anonymisée)',
             'Votre consentement',
@@ -113,6 +119,7 @@ export const legalPages = [
           'Base de données : MongoDB',
           'Paiement : Stripe',
           'Connexion avec Google (facultative) : Google',
+          'Statistiques de visite sans cookies : Umami Software, Inc. (données hébergées dans l’Union européenne)',
           'Mesure d’audience : Google Ireland Ltd — uniquement si vous l’acceptez',
           'Localisation de la ville (facultative) : OpenStreetMap / Nominatim'
         ]
@@ -126,6 +133,7 @@ export const legalPages = [
         type: 'ul',
         items: [
           '**Stockage nécessaire** : session de connexion et préférences de formulaire — sans consentement',
+          '**Statistiques de visite** (Umami) — sans cookie et sans donnée permettant de vous identifier, donc sans consentement',
           '**Mesure d’audience** (Google Analytics 4) — **uniquement après votre accord** via le bandeau'
         ]
       },
