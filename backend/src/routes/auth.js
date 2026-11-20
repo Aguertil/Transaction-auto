@@ -92,6 +92,10 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Email et mot de passe requis' });
     }
 
+    if (typeof password !== 'string' || password.length < 8) {
+      return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 8 caractères' });
+    }
+
     const type = accountType === 'pro' ? 'pro' : 'particulier';
     if (type === 'pro' && !societe?.raisonSociale) {
       return res.status(400).json({ error: 'Raison sociale requise pour un compte professionnel' });
